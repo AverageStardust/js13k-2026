@@ -1,0 +1,36 @@
+{
+  "version": "5",
+  "specifiers": {
+    "jsr:@std/internal@^1.0.14": "1.0.14",
+    "jsr:@std/path@*": "1.1.5"
+  },
+  "jsr": {
+    "@std/internal@1.0.14": {
+      "integrity": "291516b3d4c35024d6ffbc0a9df5bf4c64116e05b50012cf846710152d2ffdf7"
+    },
+    "@std/path@1.1.5": {
+      "integrity": "ccea00982ea28c36becaf6e62f855406c76a8c32d462f66f415bbb7d83a271bc",
+      "dependencies": [
+        "jsr:@std/internal"
+      ]
+    }
+  },
+  "workspace": {
+    "packageJson": {
+      "dependencies": [
+        "npm:@rollup/plugin-typescript@^12.1.4",
+        "npm:@types/deno@^2.7.0",
+        "npm:@types/node@^26.2.0",
+        "npm:clean-css@^5.3.3",
+        "npm:cross-env@^7.0.3",
+        "npm:ect-bin@1.4.1",
+        "npm:html-minifier@4",
+        "npm:roadroller@^2.1.0",
+        "npm:terser@^5.43.1",
+        "npm:tslib@^2.8.1",
+        "npm:typescript@^5.9.2",
+        "npm:vite@^7.1.1"
+      ]
+    }
+  }
+}

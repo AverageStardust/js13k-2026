@@ -1,0 +1,29 @@
+{
+  "name": "typescript-template",
+  "version": "1.1.0",
+  "main": "index.js",
+  "type": "module",
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^12.1.4",
+    "@types/node": "^26.2.0",
+    "clean-css": "^5.3.3",
+    "cross-env": "^7.0.3",
+    "ect-bin": "1.4.1",
+    "html-minifier": "^4.0.0",
+    "roadroller": "^2.1.0",
+    "terser": "^5.43.1",
+    "tslib": "^2.8.1",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.1"
+  },
+  "scripts": {
+    "dev": "vite serve",
+    "build": "cross-env vite build",
+    "find-best": "deno --allow-run --allow-write findBest.ts",
+    "build-best": "cross-env USE_RR_CONFIG=true vite build"
+  },
+  "author": "Rob Louie",
+  "dependencies": {
+    "@types/deno": "^2.7.0"
+  }
+}
