@@ -14,7 +14,7 @@ export class Server {
     private loopHandle: number = -1;
 
     open(world: World = createWorld()) {
-        this.loopHandle = setInterval(() => this.update, updateDelay);
+        this.loopHandle = setInterval(() => this.update(), updateDelay);
         this.world = world;
     }
 

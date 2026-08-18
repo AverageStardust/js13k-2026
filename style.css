@@ -1,0 +1,16 @@
+body {
+    background: #000;
+    color: #fff;
+}
+
+canvas, div, h2 {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    display: block;
+}
+
+div {
+    width: 240px;
+    white-space: pre;
+}
