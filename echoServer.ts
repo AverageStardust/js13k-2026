@@ -13,7 +13,7 @@ export default function setupEchoServer(wss: WebSocketServer) {
 }
 
 function broadcast(message: Uint8Array, except?: WebSocket) {
-    sockets.forEach((socket) => {
+    for (const socket of sockets) {
         if (socket !== except) socket.send(message);
-    });
+    }
 }

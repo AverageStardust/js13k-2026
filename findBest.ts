@@ -17,10 +17,8 @@ const cliToApi = new Map([
 ]);
 
 function main() {
-    let seconds = NaN;
-    while (isNaN(seconds)) {
-        seconds = parseInt(prompt("Run for how many seconds?") || "", 10);
-    }
+    let seconds = parseInt(prompt("Run for how many seconds?") || "", 10);
+    if (isNaN(seconds)) return;
 
     console.log("Building...");
     const build = new Deno.Command("vite", {

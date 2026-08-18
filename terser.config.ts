@@ -44,7 +44,7 @@ export const terserOptions: Terser.MinifyOptions = {
 
     // Turn booleans into 0 and 1, also makes comparisons with booleans use == and != instead of === and !==
     // This must be false for terser, or it breaks booleans!
-    booleans_as_integers: false,
+    booleans_as_integers: true,
 
     // Collapse single-use non-constant variables, side effects permitting.
     collapse_vars: true,
@@ -65,10 +65,10 @@ export const terserOptions: Terser.MinifyOptions = {
 
     // discard calls to console.* functions.
     // If you wish to drop a specific function call such as console.info
-    drop_console: false,
+    drop_console: true,
 
     // remove debugger; statements
-    drop_debugger: false,
+    drop_debugger: true,
 
     // attempt to evaluate constant expressions.
     evaluate: true,
