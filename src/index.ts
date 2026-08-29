@@ -1,7 +1,7 @@
 import { Game } from "./game.js";
 
 const game = new Game()
-game.goOffline();
+game.goOnline();
 // if (confirm("Join multiplayer?")) {
 //     game.goOnline();
 // } else {

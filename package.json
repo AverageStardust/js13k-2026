@@ -20,6 +20,7 @@
   },
   "scripts": {
     "dev": "vite serve",
+    "host": "vite serve --host",
     "build": "cross-env vite build",
     "find-best": "deno --allow-run --allow-write findBest.ts",
     "build-best": "cross-env USE_RR_CONFIG=true vite build"

@@ -1,6 +1,19 @@
-export interface World {
-}
+import { Entity } from "./entity.js";
 
-export function createWorld(): World {
-    return {};
+export class World {
+    entities: Record<number, Entity> = {};
+
+    static inflate(state: string): World {
+        const world = Object.setPrototypeOf(JSON.parse(state), World.prototype);
+
+        for (const entity of Object.values(world.entities)) {
+            Entity.inflate(entity)
+        }
+
+        return world as World;
+    }
+
+    constructor() {
+
+    }
 }

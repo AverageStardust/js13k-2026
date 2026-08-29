@@ -1,8 +1,10 @@
+import { Player } from "./entity.js";
 import {
     AnyMessage,
+    InputSignal,
     UpdateSignal,
 } from "./message.js";
-import { createWorld, World } from "./world.js";
+import { World } from "./world.js";
 
 const updateDelay = 200;
 
@@ -13,7 +15,7 @@ export class Server {
     private world!: World;
     private loopHandle: number = -1;
 
-    open(world: World = createWorld()) {
+    open(world: World) {
         this.loopHandle = setInterval(() => this.update(), updateDelay);
         this.world = world;
     }
@@ -23,13 +25,24 @@ export class Server {
         this.loopHandle = -1;
     }
 
-    receive(_: AnyMessage): void {}
+    receive(message: AnyMessage): void {
+        if (message.sig === InputSignal) {
+            if (this.world.entities[message.uuid] === undefined) {
+                this.world.entities[message.uuid] = new Player();
+            }
+            (this.world.entities[message.uuid] as Player).input = message.input;
+        }
+    }
 
     private update() {
+        for (const entity of Object.values(this.world.entities)) {
+            entity.update();
+        }
+
         this.send({
             sig: UpdateSignal,
             age: ++this.age,
-            world: this.world,
+            state: JSON.stringify(this.world),
         });
     }
 }

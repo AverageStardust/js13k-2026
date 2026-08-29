@@ -3,7 +3,7 @@
 import { Client } from "./client.js";
 import { AnyMessage } from "./message.js";
 import { Server } from "./server.js";
-import { createWorld } from "./world.js";
+import { World } from "./world.js";
 
 export class Game {
     private socket: WebSocket;
@@ -38,7 +38,7 @@ export class Game {
 
         this.client.resetConnection();
         if (this.isHosting !== true) {
-            this.server.open();
+            this.server.open(new World());
         }
     }
 
@@ -70,7 +70,7 @@ export class Game {
             this.client.send = (message: AnyMessage) =>
                 this.server.receive(message);
 
-            this.server.open(this.client.world ?? createWorld());
+            this.server.open(this.client.world ?? new World());
             this.client.resetConnection();
         }
     }

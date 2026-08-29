@@ -1,13 +1,15 @@
-import { World } from "./world.js";
-
-interface GenericMessage<T extends number> {
-    sig: T;
-}
-
 export const UpdateSignal = 0;
-interface UpdateMessage extends GenericMessage<0> {
+interface UpdateMessage {
+    sig: 0
     age: number;
-    world: World;
+    state: string;
 }
 
-export type AnyMessage = UpdateMessage;
+export const InputSignal = 1;
+interface InputMessage {
+    sig: 1;
+    uuid: number;
+    input: Record<string, boolean>;
+}
+
+export type AnyMessage = UpdateMessage | InputMessage;
