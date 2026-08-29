@@ -39,6 +39,7 @@ export class Client {
         // @ts-ignore
         this.world = undefined;
         this.serverAge = 0;
+        this.lastUpdate = Date.now();
     }
 
     receive(message: AnyMessage): void {
@@ -90,6 +91,10 @@ export class Client {
                 const i = x + position[0] - 8;
                 const j = y + position[1] - 8;
                 let char = ".";
+
+                if (i % 3 == 0 && j % 3 == 0) {
+                    char = "+";
+                }
 
                 const hash = i + j * 2000;
 

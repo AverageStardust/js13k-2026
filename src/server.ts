@@ -26,7 +26,7 @@ export class Server {
     }
 
     receive(message: AnyMessage): void {
-        if (message.sig === InputSignal) {
+        if (this.loopHandle > -1 && message.sig === InputSignal) {
             if (this.world.entities[message.uuid] === undefined) {
                 this.world.entities[message.uuid] = new Player();
             }
