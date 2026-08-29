@@ -1,9 +1,5 @@
 import { Player } from "./entity.js";
-import {
-    AnyMessage,
-    InputSignal,
-    UpdateSignal,
-} from "./message.js";
+import { AnyMessage, InputSignal, UpdateSignal } from "./message.js";
 import { World } from "./world.js";
 
 const updateDelay = 200;

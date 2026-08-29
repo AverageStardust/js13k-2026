@@ -67,16 +67,19 @@ export class Client {
         this.send({
             sig: InputSignal,
             uuid: this.playerUUID,
-            input: this.playerInput
+            input: this.playerInput,
         });
     }
 
     render(position: Vector) {
-        const entityByPosition: Record<number, Entity> = {}
+        const entityByPosition: Record<number, Entity> = {};
         for (const entity of Object.values(this.world.entities)) {
             const hash = entity.position[0] + entity.position[1] * 2000;
-            if (entityByPosition[hash] === undefined || entityByPosition[hash].visibility < entity.visibility) {
-                entityByPosition[hash] = entity
+            if (
+                entityByPosition[hash] === undefined ||
+                entityByPosition[hash].visibility < entity.visibility
+            ) {
+                entityByPosition[hash] = entity;
             }
         }
 

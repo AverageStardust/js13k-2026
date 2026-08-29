@@ -7,13 +7,9 @@ export class World {
         const world = Object.setPrototypeOf(JSON.parse(state), World.prototype);
 
         for (const entity of Object.values(world.entities)) {
-            Entity.inflate(entity)
+            Entity.inflate(entity);
         }
 
         return world as World;
-    }
-
-    constructor() {
-
     }
 }
