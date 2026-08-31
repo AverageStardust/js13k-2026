@@ -26,15 +26,18 @@ export class Server {
             if (this.world.entities[message.uuid] === undefined) {
                 this.world.entities[message.uuid] = new Player();
             }
-            (this.world.entities[message.uuid] as Player).input = message.input;
+            (this.world.entities[message.uuid] as Player).setInput(message.input, this.world.time);
         }
     }
 
     private update() {
         for (const entity of Object.values(this.world.entities)) {
-            entity.update();
+            if (entity.active) {
+                entity.update(this.world.time);
+            }
         }
 
+        this.world.time++;
         this.send({
             sig: UpdateSignal,
             age: ++this.age,

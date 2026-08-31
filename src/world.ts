@@ -1,6 +1,7 @@
 import { Entity } from "./entity.js";
 
 export class World {
+    time: number = 0;
     entities: Record<number, Entity> = {};
 
     static inflate(state: string): World {

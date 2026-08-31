@@ -56,11 +56,11 @@ export class Client {
         this.world = world;
 
         const player = this.world.entities[this.playerUUID];
-        if (player === undefined) {
-            this.sendInput();
-        } else {
+        if (player !== undefined) {
             this.render(player.position);
         }
+
+        this.sendInput();
     }
 
     sendInput() {
@@ -75,9 +75,12 @@ export class Client {
         const entityByPosition: Record<number, Entity> = {};
         for (const entity of Object.values(this.world.entities)) {
             const hash = entity.position[0] + entity.position[1] * 2000;
+            const oldEntity = entityByPosition[hash];
+
             if (
-                entityByPosition[hash] === undefined ||
-                entityByPosition[hash].visibility < entity.visibility
+                entity.active &&
+                (oldEntity === undefined ||
+                    oldEntity.visibility < entity.visibility)
             ) {
                 entityByPosition[hash] = entity;
             }
