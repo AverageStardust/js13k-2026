@@ -11,7 +11,7 @@ function main() {
     const server = new Server();
 
     socket.onmessage = (event: MessageEvent<string>) => {
-        if (event.data[0] !== "@") {
+        if (event.data[0] === "{") {
             const message = JSON.parse(event.data) as AnyMessage;
 
             client.receive(message);
@@ -27,13 +27,13 @@ function main() {
     };
 
     setInterval(() => {
-        if (client.lastUpdate < Date.now() - 2000) {
+        if (client.lastUpdate < Date.now() - 1000) {
             client.send = (message: AnyMessage) => server.receive(message);
 
             server.open(client.world ?? new World());
             client.resetConnection();
         }
-    }, 200);
+    }, 100);
 
     server.send = (message: AnyMessage) => {
         socket.send(JSON.stringify(message));

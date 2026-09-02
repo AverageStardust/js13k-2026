@@ -12,25 +12,28 @@ export abstract class Entity {
         return Math.floor(Math.random() * 2 ** 53);
     }
 
+    abstract readonly type: string;
+
     position: Vector = [0, 0];
     active: boolean = true;
+    readonly depth: number = 50;
 
-    abstract readonly type: string;
-    abstract readonly visibility: number;
     abstract char: string;
+    colour: string = "#000";
 
     abstract update(time: number): void;
 }
 
 export class Player extends Entity {
     readonly type = "player";
-    readonly visibility = 10;
-    char = "🐕";
+    readonly depth = 100;
+    readonly char = "🐕";
+
     input: Record<string, boolean> = {};
     lastInput: number = 0;
 
     update(time: number) {
-        if (time > this.lastInput + 20) {
+        if (time > this.lastInput + 10) {
             this.active = false;
         }
 

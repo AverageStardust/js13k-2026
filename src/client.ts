@@ -1,6 +1,5 @@
 import { Entity } from "./entity.js";
-import { AnyMessage, InputSignal, UpdateSignal } from "./message.js";
-import { Vector } from "./vector.js";
+import { AnyMessage, INPUT_SIGNAL, UPDATE_SIGNAL } from "./message.js";
 import { World } from "./world.js";
 
 export class Client {
@@ -43,7 +42,7 @@ export class Client {
     }
 
     receive(message: AnyMessage): void {
-        if (message.sig === UpdateSignal) {
+        if (message.sig === UPDATE_SIGNAL) {
             if (message.age > this.serverAge) {
                 this.update(World.inflate(message.state));
                 this.serverAge = message.age;
@@ -57,7 +56,7 @@ export class Client {
 
         const player = this.world.entities[this.playerUUID];
         if (player !== undefined) {
-            this.render(player.position);
+            this.world.render(player.position, this.ctx);
         }
 
         this.sendInput();
@@ -65,53 +64,9 @@ export class Client {
 
     sendInput() {
         this.send({
-            sig: InputSignal,
+            sig: INPUT_SIGNAL,
             uuid: this.playerUUID,
             input: this.playerInput,
         });
-    }
-
-    render(position: Vector) {
-        const entityByPosition: Record<number, Entity> = {};
-        for (const entity of Object.values(this.world.entities)) {
-            const hash = entity.position[0] + entity.position[1] * 2000;
-            const oldEntity = entityByPosition[hash];
-
-            if (
-                entity.active &&
-                (oldEntity === undefined ||
-                    oldEntity.visibility < entity.visibility)
-            ) {
-                entityByPosition[hash] = entity;
-            }
-        }
-
-        this.ctx.fillStyle = "#000";
-        this.ctx.fillRect(0, 0, 544, 544);
-
-        this.ctx.fillStyle = "#fff";
-        this.ctx.font = "30px Courier New";
-        this.ctx.textAlign = "center";
-        for (let x = 0; x < 17; x++) {
-            for (let y = 0; y < 17; y++) {
-                const i = x + position[0] - 8;
-                const j = y + position[1] - 8;
-                let char = ".";
-
-                if (i % 3 == 0 && j % 3 == 0) {
-                    char = "+";
-                }
-
-                const hash = i + j * 2000;
-
-                if (entityByPosition[hash] !== undefined) {
-                    char = entityByPosition[hash].char;
-                }
-
-                this.ctx.fillText(char, x * 32 + 16, y * 32 + 28);
-            }
-        }
-
-        // this.inventory.innerText = ["item1", "item2", "item3"].join("\n");
     }
 }

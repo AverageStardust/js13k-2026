@@ -1,8 +1,8 @@
 import { Player } from "./entity.js";
-import { AnyMessage, InputSignal, UpdateSignal } from "./message.js";
+import { AnyMessage, INPUT_SIGNAL, UPDATE_SIGNAL } from "./message.js";
 import { World } from "./world.js";
 
-const updateDelay = 200;
+const UPDATE_DELAY = 200;
 
 export class Server {
     age: number = Math.random();
@@ -12,17 +12,19 @@ export class Server {
     private loopHandle: number = -1;
 
     open(world: World) {
-        this.loopHandle = setInterval(() => this.update(), updateDelay);
+        console.log("open")
+        this.loopHandle = setInterval(() => this.update(), UPDATE_DELAY);
         this.world = world;
     }
 
     close() {
+        console.log("close")
         clearInterval(this.loopHandle);
         this.loopHandle = -1;
     }
 
     receive(message: AnyMessage): void {
-        if (this.loopHandle > -1 && message.sig === InputSignal) {
+        if (this.loopHandle > -1 && message.sig === INPUT_SIGNAL) {
             if (this.world.entities[message.uuid] === undefined) {
                 this.world.entities[message.uuid] = new Player();
             }
@@ -39,7 +41,7 @@ export class Server {
 
         this.world.time++;
         this.send({
-            sig: UpdateSignal,
+            sig: UPDATE_SIGNAL,
             age: ++this.age,
             state: JSON.stringify(this.world),
         });
