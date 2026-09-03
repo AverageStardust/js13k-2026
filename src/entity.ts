@@ -19,7 +19,7 @@ export abstract class Entity {
     position: Vector = [0, 0];
     active: boolean = true;
 
-    abstract char: string;
+    abstract rune: string;
 
     abstract update(world: World): void;
 }
@@ -27,7 +27,7 @@ export abstract class Entity {
 export class Player extends Entity {
     readonly type = "player";
     readonly depth = 100;
-    readonly char = "🐕";
+    readonly rune = "🐕";
 
     target: Vector | undefined = undefined;
     input: Record<string, boolean> = {};

@@ -44,15 +44,15 @@ export class World {
         }
     }
 
-    private getTileData(x: number, y: number): TileData {
+    getTileData(x: number, y: number): TileData {
         return TILES[this.getTile(x, y)];
     }
 
-    private getTile(x: number, y: number): number {
+    getTile(x: number, y: number): number {
         return this.tiles[modulus(y, WORLD_SIZE)][modulus(x, WORLD_SIZE)];
     }
 
-    private setTile(x: number, y: number, tileId: number) {
+    setTile(x: number, y: number, tileId: number) {
         this.tiles[modulus(y, WORLD_SIZE)][modulus(x, WORLD_SIZE)] = tileId;
     }
 
@@ -103,7 +103,7 @@ export class World {
                 } else {
                     ctx.fillStyle = "#fff";
                 }
-                ctx.fillText(entity?.char ?? tileData.char, x * 32 + 16, y * 32 + 24);
+                ctx.fillText(entity?.rune ?? tileData.rune, x * 32 + 16, y * 32 + 24);
             }
         }
     }

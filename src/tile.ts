@@ -1,19 +1,19 @@
 export interface TileData {
-    char: string;
+    rune: string;
     colour: string;
 }
 
 export const TILES: TileData[] = [
     {
-        char: ",",
+        rune: ",",
         colour: "#090",
     },
     {
-        char: "⁂",
+        rune: "⁂",
         colour: "#090",
     },
     {
-        char: "🌳",
+        rune: "🌳",
         colour: "#090",
     }
 ];
