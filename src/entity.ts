@@ -1,4 +1,5 @@
-import { Vector } from "./vector.js";
+import { Vector, vectorAdd } from "./vector.js";
+import { World } from "./world.js";
 
 export abstract class Entity {
     static inflate(entity: any) {
@@ -13,15 +14,14 @@ export abstract class Entity {
     }
 
     abstract readonly type: string;
+    readonly depth: number = 50;
 
     position: Vector = [0, 0];
     active: boolean = true;
-    readonly depth: number = 50;
 
     abstract char: string;
-    colour: string = "#000";
 
-    abstract update(time: number): void;
+    abstract update(world: World): void;
 }
 
 export class Player extends Entity {
@@ -29,26 +29,32 @@ export class Player extends Entity {
     readonly depth = 100;
     readonly char = "🐕";
 
+    target: Vector | undefined = undefined;
     input: Record<string, boolean> = {};
     lastInput: number = 0;
 
-    update(time: number) {
-        if (time > this.lastInput + 10) {
+    update(world: World) {
+        if (world.time > this.lastInput + 10) {
             this.active = false;
         }
 
         if (this.input["w"]) {
-            this.position[1]--;
+            this.move([0, -1]);
         }
         if (this.input["s"]) {
-            this.position[1]++;
+            this.move([0, 1]);
         }
         if (this.input["a"]) {
-            this.position[0]--;
+            this.move([-1, 0]);
         }
         if (this.input["d"]) {
-            this.position[0]++;
+            this.move([1, 0]);
         }
+    }
+
+    move(direction: Vector) {
+        this.position = vectorAdd(this.position, direction);
+        this.target = vectorAdd(this.position, direction);
     }
 
     setInput(input: Record<string, boolean>, time: number) {

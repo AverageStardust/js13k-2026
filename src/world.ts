@@ -1,4 +1,4 @@
-import { Entity } from "./entity.js";
+import { Entity, Player } from "./entity.js";
 import { BUSHES_TILE, GRASS_TILE, TILES, TREE_TILE, TileData } from "./tile.js";
 import { Vector, vectorHash } from "./vector.js";
 
@@ -38,26 +38,28 @@ export class World {
             const x = Math.floor(Math.random() * WORLD_SIZE);
             const y = Math.floor(Math.random() * WORLD_SIZE);
 
-            if (this.tiles[y][x] == find) {
-                this.tiles[y][x] = replace;
+            if (this.getTile(x, y) == find) {
+                this.setTile(x, y, replace);
             }
         }
     }
 
-    getTileData(x: number, y: number): TileData {
+    private getTileData(x: number, y: number): TileData {
         return TILES[this.getTile(x, y)];
     }
 
-    getTile(x: number, y: number): number {
+    private getTile(x: number, y: number): number {
         return this.tiles[modulus(y, WORLD_SIZE)][modulus(x, WORLD_SIZE)];
     }
 
-    setTile(x: number, y: number, tileId: number) {
+    private setTile(x: number, y: number, tileId: number) {
         this.tiles[modulus(y, WORLD_SIZE)][modulus(x, WORLD_SIZE)] = tileId;
     }
 
     render(position: Vector, ctx: CanvasRenderingContext2D) {
         const entityByPosition: Record<number, Entity> = {};
+        const selectedPositions: Record<number, true> = [];
+
         for (const entity of Object.values(this.entities)) {
             const hash = vectorHash(entity.position);
             const oldEntity = entityByPosition[hash];
@@ -68,6 +70,10 @@ export class World {
                     oldEntity.depth < entity.depth)
             ) {
                 entityByPosition[hash] = entity;
+
+                if (entity instanceof Player && entity.target !== undefined) {
+                    selectedPositions[vectorHash(entity.target)] = true;
+                }
             }
         }
 
@@ -81,10 +87,15 @@ export class World {
                 const i = x + position[0] - 8;
                 const j = y + position[1] - 8;
 
-                const entity: Entity | undefined = entityByPosition[vectorHash([i, j])];
+                const hash = vectorHash([i, j]);
+                const entity: Entity | undefined = entityByPosition[hash];
                 const tileData = this.getTileData(i, j);
 
-                ctx.fillStyle = tileData.colour + "3";
+                if(selectedPositions[hash] === true) {
+                    ctx.fillStyle = tileData.colour + "5";
+                } else {
+                    ctx.fillStyle = tileData.colour + "2";
+                }
                 ctx.fillRect(x * 32, y * 32, 32, 32);
 
                 if (entity === undefined) {

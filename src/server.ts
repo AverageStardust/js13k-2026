@@ -12,13 +12,11 @@ export class Server {
     private loopHandle: number = -1;
 
     open(world: World) {
-        console.log("open")
         this.loopHandle = setInterval(() => this.update(), UPDATE_DELAY);
         this.world = world;
     }
 
     close() {
-        console.log("close")
         clearInterval(this.loopHandle);
         this.loopHandle = -1;
     }
@@ -35,7 +33,7 @@ export class Server {
     private update() {
         for (const entity of Object.values(this.world.entities)) {
             if (entity.active) {
-                entity.update(this.world.time);
+                entity.update(this.world);
             }
         }
 
