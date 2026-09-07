@@ -7,7 +7,7 @@ import {
     TREE_TILE,
     TileData,
 } from "./tile.js";
-import { Vector, vectorHash, vectorModulus } from "./math.js";
+import { Vector, vectorAdd, vectorHash, vectorModulus } from "./math.js";
 import { Noise } from "./random.js";
 
 const WORLD_SIZE = 100;
@@ -59,29 +59,29 @@ export class World {
             const x = Math.floor(Math.random() * WORLD_SIZE);
             const y = Math.floor(Math.random() * WORLD_SIZE);
 
-            if (this.getTile(x, y) == find) {
-                this.setTile(x, y, replace);
+            if (this.getTile([x, y]) == find) {
+                this.setTile([x, y], replace);
             }
         }
     }
 
-    getTileData(x: number, y: number): TileData {
-        return TILES[this.getTile(x, y)];
+    getTileData(location: Vector): TileData {
+        return TILES[this.getTile(location)];
     }
 
-    getTile(x: number, y: number): number {
-        [x, y] = vectorModulus([x, y], [WORLD_SIZE, WORLD_SIZE]);
-        return this.tiles[y][x];
+    getTile(location: Vector): number {
+        location = vectorModulus(location, [WORLD_SIZE, WORLD_SIZE]);
+        return this.tiles[location[1]][location[0]];
     }
 
-    setTile(x: number, y: number, tileId: number) {
-        [x, y] = vectorModulus([x, y], [WORLD_SIZE, WORLD_SIZE]);
-        this.tiles[y][x] = tileId;
+    setTile(location: Vector, tileId: number) {
+        location = vectorModulus(location, [WORLD_SIZE, WORLD_SIZE]);
+        this.tiles[location[1]][location[0]] = tileId;
     }
 
     render(cameraPosition: Vector, ctx: CanvasRenderingContext2D) {
         const beingByPosition: Record<number, Being> = {};
-        const selectedPositions: Record<number, true> = [];
+        const selectedPositions: Record<number, number> = [];
 
         for (const being of Object.values(this.beings)) {
             const hash = vectorHash(being.position);
@@ -94,7 +94,7 @@ export class World {
                 beingByPosition[hash] = being;
 
                 if (being instanceof Player && being.target !== undefined) {
-                    selectedPositions[vectorHash(being.target)] = true;
+                    selectedPositions[vectorHash(being.target)] = being.breakProgress;
                 }
             }
         }
@@ -106,17 +106,24 @@ export class World {
         ctx.textAlign = "center";
         for (let x = 0; x < 17; x++) {
             for (let y = 0; y < 17; y++) {
-                const i = x + cameraPosition[0] - 8;
-                const j = y + cameraPosition[1] - 8;
+                const position = vectorAdd(cameraPosition, [x - 8, y - 8]);
 
-                const hash = vectorHash([i, j]);
+                const hash = vectorHash(position);
                 const being: Being | undefined = beingByPosition[hash];
-                const tileData = this.getTileData(i, j);
+                const tileData = this.getTileData(position);
 
-                if (selectedPositions[hash] === true) {
-                    ctx.fillStyle = tileData.colour + "6";
+                const breakProgress = selectedPositions[hash];
+
+                ctx.fillStyle = tileData.colour;
+                if (breakProgress !== undefined) {
+                    // light background if selected
+                    if (breakProgress > 0 && this.time % 4 < 2) {
+                        ctx.fillStyle += "77";
+                    } else {
+                        ctx.fillStyle += "55";
+                    }
                 } else {
-                    ctx.fillStyle = tileData.colour + "2";
+                    ctx.fillStyle += "22";
                 }
                 ctx.fillRect(x * 32, y * 32, 32, 32);
 
@@ -125,10 +132,18 @@ export class World {
                 } else {
                     ctx.fillStyle = "#fff";
                 }
+
+                let offsetX = 16, offsetY = 24;
+                if (breakProgress > 0) {
+                    offsetX += (Math.random() - 0.5) * (breakProgress * 2 + 1);
+                    offsetY += (Math.random() - 0.5) * (breakProgress * 2 + 1);
+                    ctx.fillStyle += Math.ceil(255 - breakProgress * 255).toString(16).padStart(2, "0");
+                }
+
                 ctx.fillText(
                     being?.rune ?? tileData.rune,
-                    x * 32 + 16,
-                    y * 32 + 24,
+                    x * 32 + offsetX,
+                    y * 32 + offsetY,
                 );
             }
         }

@@ -1,4 +1,5 @@
 import { Vector, vectorAdd } from "./math.js";
+import { GRASS_TILE } from "./tile.js";
 import { World } from "./world.js";
 
 export abstract class Being {
@@ -30,6 +31,7 @@ export class Player extends Being {
     readonly rune = "🐕";
 
     target: Vector | undefined = undefined;
+    breakProgress: number = 0;
     input: Record<string, boolean> = {};
     lastInput: number = 0;
 
@@ -50,11 +52,22 @@ export class Player extends Being {
         if (this.input["d"]) {
             this.move([1, 0]);
         }
+        if (this.input["q"] && this.target !== undefined) {
+            this.breakProgress += 0.1;
+
+            if (this.breakProgress >= 1) {
+                world.setTile(this.target, GRASS_TILE)
+                this.breakProgress = 0;
+            }
+        } else {
+            this.breakProgress = 0;
+        }
     }
 
     move(direction: Vector) {
         this.position = vectorAdd(this.position, direction);
         this.target = vectorAdd(this.position, direction);
+        this.breakProgress = 0;
     }
 
     setInput(input: Record<string, boolean>, time: number) {
