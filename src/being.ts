@@ -1,11 +1,11 @@
-import { Vector, vectorAdd } from "./vector.js";
+import { Vector, vectorAdd } from "./math.js";
 import { World } from "./world.js";
 
-export abstract class Entity {
-    static inflate(entity: any) {
-        switch (entity.type) {
+export abstract class Being {
+    static inflate(being: any) {
+        switch (being.type) {
             case "player":
-                Object.setPrototypeOf(entity, Player.prototype);
+                Object.setPrototypeOf(being, Player.prototype);
         }
     }
 
@@ -24,7 +24,7 @@ export abstract class Entity {
     abstract update(world: World): void;
 }
 
-export class Player extends Entity {
+export class Player extends Being {
     readonly type = "player";
     readonly depth = 100;
     readonly rune = "🐕";

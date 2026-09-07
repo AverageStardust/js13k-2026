@@ -1,4 +1,4 @@
-import { Entity } from "./entity.js";
+import { Being } from "./being.js";
 import { AnyMessage, INPUT_SIGNAL, UPDATE_SIGNAL } from "./message.js";
 import { World } from "./world.js";
 
@@ -21,7 +21,7 @@ export class Client {
         this.ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
         this.inventory = document.querySelector("div") as HTMLDivElement;
 
-        this.playerUUID = Entity.getUUID();
+        this.playerUUID = Being.getUUID();
 
         document.onkeydown = (event) => {
             this.playerInput[event.key] = true;
@@ -54,7 +54,7 @@ export class Client {
     update(world: World) {
         this.world = world;
 
-        const player = this.world.entities[this.playerUUID];
+        const player = this.world.beings[this.playerUUID];
         if (player !== undefined) {
             this.world.render(player.position, this.ctx);
         }

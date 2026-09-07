@@ -1,6 +1,14 @@
-import { Entity, Player } from "./entity.js";
-import { BUSHES_TILE, GRASS_TILE, TILES, TREE_TILE, TileData } from "./tile.js";
-import { Vector, vectorHash } from "./vector.js";
+import { Being as Being, Player } from "./being.js";
+import {
+    BUSHES_TILE,
+    GRASS_TILE,
+    GRAVEL_TILE,
+    TILES,
+    TREE_TILE,
+    TileData,
+} from "./tile.js";
+import { Vector, vectorHash, vectorModulus } from "./math.js";
+import { Noise } from "./random.js";
 
 const WORLD_SIZE = 100;
 const WORLD_AREA = WORLD_SIZE * WORLD_SIZE;
@@ -8,24 +16,37 @@ const WORLD_AREA = WORLD_SIZE * WORLD_SIZE;
 export class World {
     time: number = 0;
     tiles: number[][];
-    entities: Record<number, Entity> = {};
+    beings: Record<number, Being> = {};
 
     static inflate(state: string): World {
-        const world = Object.setPrototypeOf(JSON.parse(state), World.prototype);
+        // not a world yet but it's best if typescript knows the property names
+        const world = Object.setPrototypeOf(
+            JSON.parse(state),
+            World.prototype,
+        ) as World;
 
-        for (const entity of Object.values(world.entities)) {
-            Entity.inflate(entity);
+        for (const being of Object.values(world.beings)) {
+            Being.inflate(being);
         }
 
         return world as World;
     }
 
     constructor() {
+        const noise = new Noise();
         this.tiles = [];
         for (let y = 0; y < WORLD_SIZE; y++) {
             this.tiles[y] = [];
             for (let x = 0; x < WORLD_SIZE; x++) {
-                this.tiles[y][x] = GRASS_TILE;
+                const a = noise.simple(
+                    [x * 0.2, y * 0.2],
+                    [WORLD_SIZE * 0.2, WORLD_SIZE * 0.2],
+                );
+                if (a > 0.0) {
+                    this.tiles[y][x] = GRAVEL_TILE;
+                } else {
+                    this.tiles[y][x] = GRASS_TILE;
+                }
             }
         }
 
@@ -49,30 +70,31 @@ export class World {
     }
 
     getTile(x: number, y: number): number {
-        return this.tiles[modulus(y, WORLD_SIZE)][modulus(x, WORLD_SIZE)];
+        [x, y] = vectorModulus([x, y], [WORLD_SIZE, WORLD_SIZE]);
+        return this.tiles[y][x];
     }
 
     setTile(x: number, y: number, tileId: number) {
-        this.tiles[modulus(y, WORLD_SIZE)][modulus(x, WORLD_SIZE)] = tileId;
+        [x, y] = vectorModulus([x, y], [WORLD_SIZE, WORLD_SIZE]);
+        this.tiles[y][x] = tileId;
     }
 
-    render(position: Vector, ctx: CanvasRenderingContext2D) {
-        const entityByPosition: Record<number, Entity> = {};
+    render(cameraPosition: Vector, ctx: CanvasRenderingContext2D) {
+        const beingByPosition: Record<number, Being> = {};
         const selectedPositions: Record<number, true> = [];
 
-        for (const entity of Object.values(this.entities)) {
-            const hash = vectorHash(entity.position);
-            const oldEntity = entityByPosition[hash];
+        for (const being of Object.values(this.beings)) {
+            const hash = vectorHash(being.position);
+            const oldBeing = beingByPosition[hash];
 
             if (
-                entity.active &&
-                (oldEntity === undefined ||
-                    oldEntity.depth < entity.depth)
+                being.active &&
+                (oldBeing === undefined || oldBeing.depth < being.depth)
             ) {
-                entityByPosition[hash] = entity;
+                beingByPosition[hash] = being;
 
-                if (entity instanceof Player && entity.target !== undefined) {
-                    selectedPositions[vectorHash(entity.target)] = true;
+                if (being instanceof Player && being.target !== undefined) {
+                    selectedPositions[vectorHash(being.target)] = true;
                 }
             }
         }
@@ -84,31 +106,31 @@ export class World {
         ctx.textAlign = "center";
         for (let x = 0; x < 17; x++) {
             for (let y = 0; y < 17; y++) {
-                const i = x + position[0] - 8;
-                const j = y + position[1] - 8;
+                const i = x + cameraPosition[0] - 8;
+                const j = y + cameraPosition[1] - 8;
 
                 const hash = vectorHash([i, j]);
-                const entity: Entity | undefined = entityByPosition[hash];
+                const being: Being | undefined = beingByPosition[hash];
                 const tileData = this.getTileData(i, j);
 
-                if(selectedPositions[hash] === true) {
-                    ctx.fillStyle = tileData.colour + "5";
+                if (selectedPositions[hash] === true) {
+                    ctx.fillStyle = tileData.colour + "6";
                 } else {
                     ctx.fillStyle = tileData.colour + "2";
                 }
                 ctx.fillRect(x * 32, y * 32, 32, 32);
 
-                if (entity === undefined) {
+                if (being === undefined) {
                     ctx.fillStyle = tileData.colour;
                 } else {
                     ctx.fillStyle = "#fff";
                 }
-                ctx.fillText(entity?.rune ?? tileData.rune, x * 32 + 16, y * 32 + 24);
+                ctx.fillText(
+                    being?.rune ?? tileData.rune,
+                    x * 32 + 16,
+                    y * 32 + 24,
+                );
             }
         }
     }
-}
-
-function modulus(n: number, m: number) {
-    return ((n % m) + m) % m;
 }

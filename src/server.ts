@@ -1,4 +1,4 @@
-import { Player } from "./entity.js";
+import { Player } from "./being.js";
 import { AnyMessage, INPUT_SIGNAL, UPDATE_SIGNAL } from "./message.js";
 import { World } from "./world.js";
 
@@ -12,8 +12,10 @@ export class Server {
     private loopHandle: number = -1;
 
     open(world: World) {
-        this.loopHandle = setInterval(() => this.update(), UPDATE_DELAY);
-        this.world = world;
+        if (this.loopHandle == -1) {
+            this.loopHandle = setInterval(() => this.update(), UPDATE_DELAY);
+            this.world = world;
+        }
     }
 
     close() {
@@ -23,17 +25,17 @@ export class Server {
 
     receive(message: AnyMessage): void {
         if (this.loopHandle > -1 && message.sig === INPUT_SIGNAL) {
-            if (this.world.entities[message.uuid] === undefined) {
-                this.world.entities[message.uuid] = new Player();
+            if (this.world.beings[message.uuid] === undefined) {
+                this.world.beings[message.uuid] = new Player();
             }
-            (this.world.entities[message.uuid] as Player).setInput(message.input, this.world.time);
+            (this.world.beings[message.uuid] as Player).setInput(message.input, this.world.time);
         }
     }
 
     private update() {
-        for (const entity of Object.values(this.world.entities)) {
-            if (entity.active) {
-                entity.update(this.world);
+        for (const being of Object.values(this.world.beings)) {
+            if (being.active) {
+                being.update(this.world);
             }
         }
 
