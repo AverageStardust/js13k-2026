@@ -46,7 +46,6 @@ export class Client {
             if (message.age > this.serverAge) {
                 this.update(World.inflate(message.state));
                 this.serverAge = message.age;
-                this.lastUpdate = Date.now();
             }
         }
     }
@@ -60,6 +59,8 @@ export class Client {
         }
 
         this.sendInput();
+
+        this.lastUpdate = Date.now();
     }
 
     sendInput() {

@@ -15,10 +15,12 @@ export class RNG {
         this.seed(seed);
     }
 
-    seed(seed: number) {
+    seed(seed: number, shuffles = 3) {
         this.state = seed;
         this.state %= 2147483648;
-        this.shuffle();
+        for (let i = 0; i < shuffles; i++) {
+            this.shuffle();
+        }
     }
 
     advance() {

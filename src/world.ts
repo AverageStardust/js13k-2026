@@ -1,6 +1,7 @@
 import { Being as Being, Player } from "./being.js";
 import {
     BUSHES_TILE,
+    DIRT_TILE,
     GRASS_TILE,
     GRAVEL_TILE,
     TILES,
@@ -12,6 +13,7 @@ import { Noise } from "./random.js";
 
 const WORLD_SIZE = 100;
 const WORLD_AREA = WORLD_SIZE * WORLD_SIZE;
+const UPDATE_PERCENT = 0.005;
 
 export class World {
     time: number = 0;
@@ -42,7 +44,7 @@ export class World {
                     [x * 0.2, y * 0.2],
                     [WORLD_SIZE * 0.2, WORLD_SIZE * 0.2],
                 );
-                if (a > 0.0) {
+                if (a > 0.35) {
                     this.tiles[y][x] = GRAVEL_TILE;
                 } else {
                     this.tiles[y][x] = GRASS_TILE;
@@ -56,27 +58,40 @@ export class World {
 
     scatter(find: number, replace: number, percent: number) {
         for (let i = 0; i < percent * WORLD_AREA; i++) {
-            const x = Math.floor(Math.random() * WORLD_SIZE);
-            const y = Math.floor(Math.random() * WORLD_SIZE);
-
-            if (this.getTile([x, y]) == find) {
-                this.setTile([x, y], replace);
+            const position = this.randomPosition();
+            if (this.getTile(position) == find) {
+                this.setTile(position, replace);
             }
         }
     }
 
-    getTileData(location: Vector): TileData {
-        return TILES[this.getTile(location)];
+    randomPosition(): Vector {
+        const x = Math.floor(Math.random() * WORLD_SIZE);
+        const y = Math.floor(Math.random() * WORLD_SIZE);
+        return [x, y];
     }
 
-    getTile(location: Vector): number {
-        location = vectorModulus(location, [WORLD_SIZE, WORLD_SIZE]);
-        return this.tiles[location[1]][location[0]];
+    hasNeighbour(position: Vector, tileId: number) {
+        return (
+            this.getTile(vectorAdd(position, [1, 0])) == tileId ||
+            this.getTile(vectorAdd(position, [-1, 0])) == tileId ||
+            this.getTile(vectorAdd(position, [0, 1])) == tileId ||
+            this.getTile(vectorAdd(position, [0, -1])) == tileId
+        );
     }
 
-    setTile(location: Vector, tileId: number) {
-        location = vectorModulus(location, [WORLD_SIZE, WORLD_SIZE]);
-        this.tiles[location[1]][location[0]] = tileId;
+    getTileData(position: Vector): TileData {
+        return TILES[this.getTile(position)];
+    }
+
+    getTile(position: Vector): number {
+        position = vectorModulus(position, [WORLD_SIZE, WORLD_SIZE]);
+        return this.tiles[position[1]][position[0]];
+    }
+
+    setTile(position: Vector, tileId: number) {
+        position = vectorModulus(position, [WORLD_SIZE, WORLD_SIZE]);
+        this.tiles[position[1]][position[0]] = tileId;
     }
 
     render(cameraPosition: Vector, ctx: CanvasRenderingContext2D) {
@@ -94,7 +109,8 @@ export class World {
                 beingByPosition[hash] = being;
 
                 if (being instanceof Player && being.target !== undefined) {
-                    selectedPositions[vectorHash(being.target)] = being.breakProgress;
+                    selectedPositions[vectorHash(being.target)] =
+                        being.breakProgress;
                 }
             }
         }
@@ -133,11 +149,14 @@ export class World {
                     ctx.fillStyle = "#fff";
                 }
 
-                let offsetX = 16, offsetY = 24;
+                let offsetX = 16,
+                    offsetY = 24;
                 if (breakProgress > 0) {
                     offsetX += (Math.random() - 0.5) * (breakProgress * 2 + 1);
                     offsetY += (Math.random() - 0.5) * (breakProgress * 2 + 1);
-                    ctx.fillStyle += Math.ceil(255 - breakProgress * 255).toString(16).padStart(2, "0");
+                    ctx.fillStyle += Math.ceil(255 - breakProgress * 255)
+                        .toString(16)
+                        .padStart(2, "0");
                 }
 
                 ctx.fillText(
@@ -148,4 +167,19 @@ export class World {
             }
         }
     }
+
+    update() {
+        for (let i = 0; i < UPDATE_PERCENT * WORLD_AREA; i++) {
+            const position = this.randomPosition();
+            const tile = this.getTile(position);
+            switch (tile) {
+                case DIRT_TILE:
+                    if (this.hasNeighbour(position, GRASS_TILE)) {
+                        this.setTile(position, GRASS_TILE);
+                    }
+            }
+        }
+    }
+
+    hasNebour() {}
 }

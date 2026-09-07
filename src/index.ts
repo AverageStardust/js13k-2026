@@ -27,8 +27,10 @@ function main() {
     };
 
     setInterval(() => {
-        if (client.lastUpdate < Date.now() - 1000) {
-            client.send = (message: AnyMessage) => server.receive(message);
+        if (client.lastUpdate < Date.now() - 500) {
+            client.send = (message: AnyMessage) => {
+                return server.receive(JSON.parse(JSON.stringify(message)))
+            };
 
             server.open(client.world ?? new World());
             client.resetConnection();

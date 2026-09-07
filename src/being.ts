@@ -1,5 +1,5 @@
 import { Vector, vectorAdd } from "./math.js";
-import { GRASS_TILE } from "./tile.js";
+import { DIRT_TILE } from "./tile.js";
 import { World } from "./world.js";
 
 export abstract class Being {
@@ -18,11 +18,28 @@ export abstract class Being {
     readonly depth: number = 50;
 
     position: Vector = [0, 0];
+    moveDelay: number = 0;
+    speed: number = 0.25;
     active: boolean = true;
 
     abstract rune: string;
 
-    abstract update(world: World): void;
+    update(_: World) {
+        this.moveDelay -= this.speed;
+    }
+
+    move(direction: Vector, world: World) {
+        const newPosition = vectorAdd(this.position, direction);
+        const tileData = world.getTileData(newPosition);
+
+        if(this.moveDelay <= 0.0001 && tileData.isGround) {
+            this.position = vectorAdd(this.position, direction);
+            this.moveDelay = 1
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
 
 export class Player extends Being {
@@ -36,38 +53,51 @@ export class Player extends Being {
     lastInput: number = 0;
 
     update(world: World) {
+        super.update(world);
+
         if (world.time > this.lastInput + 10) {
             this.active = false;
         }
 
+        let movement: Vector = [0, 0];
         if (this.input["w"]) {
-            this.move([0, -1]);
+            movement[1]--;
         }
         if (this.input["s"]) {
-            this.move([0, 1]);
+            movement[1]++;
         }
         if (this.input["a"]) {
-            this.move([-1, 0]);
+            movement[0]--;
         }
         if (this.input["d"]) {
-            this.move([1, 0]);
+            movement[0]++;
         }
-        if (this.input["q"] && this.target !== undefined) {
-            this.breakProgress += 0.1;
+        if (movement[0] || movement[1]) {
+            this.move(movement, world);
+        }
 
-            if (this.breakProgress >= 1) {
-                world.setTile(this.target, GRASS_TILE)
+        if (this.input["q"] && this.target !== undefined) {
+            const tileData = world.getTileData(this.target);
+            if (tileData.breakStrength < 1) {
+                this.breakProgress += tileData.breakSpeed;
+
+                if (this.breakProgress >= 1) {
+                    world.setTile(this.target, DIRT_TILE)
+                    this.breakProgress = 0;
+                }
+            } else {
                 this.breakProgress = 0;
             }
-        } else {
-            this.breakProgress = 0;
         }
     }
 
-    move(direction: Vector) {
-        this.position = vectorAdd(this.position, direction);
+    move(direction: Vector, world: World) {
+        if (super.move(direction, world)) {
+            this.breakProgress = 0;
+        }
+
         this.target = vectorAdd(this.position, direction);
-        this.breakProgress = 0;
+        return true;
     }
 
     setInput(input: Record<string, boolean>, time: number) {

@@ -2,7 +2,7 @@ import { Player } from "./being.js";
 import { AnyMessage, INPUT_SIGNAL, UPDATE_SIGNAL } from "./message.js";
 import { World } from "./world.js";
 
-const UPDATE_DELAY = 200;
+const UPDATE_DELAY = 100;
 
 export class Server {
     age: number = Math.random();
@@ -25,21 +25,27 @@ export class Server {
 
     receive(message: AnyMessage): void {
         if (this.loopHandle > -1 && message.sig === INPUT_SIGNAL) {
-            if (this.world.beings[message.uuid] === undefined) {
-                this.world.beings[message.uuid] = new Player();
+            let player = this.world.beings[message.uuid] as Player;
+
+            if (player === undefined) {
+                player = new Player();
+                this.world.beings[message.uuid] = player;
             }
-            (this.world.beings[message.uuid] as Player).setInput(message.input, this.world.time);
+
+            player.setInput(message.input, this.world.time);
         }
     }
 
     private update() {
+        this.world.update();
+
         for (const being of Object.values(this.world.beings)) {
             if (being.active) {
                 being.update(this.world);
             }
         }
 
-        this.world.time++;
+        this.world.time += UPDATE_DELAY;
         this.send({
             sig: UPDATE_SIGNAL,
             age: ++this.age,
