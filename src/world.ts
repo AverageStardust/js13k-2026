@@ -4,18 +4,20 @@ import {
     DIRT_TILE,
     GRASS_TILE,
     GRAVEL_TILE,
-    TILES,
-    TREE_TILE,
+    OAK_TREE_TILE,
+    PINE_TREE_TILE,
+    TILE_DATA,
     TileData,
-} from "./tile.js";
-import { Vector, vectorAdd, vectorHash, vectorModulus } from "./math.js";
-import { Noise } from "./random.js";
+} from "./data.js";
+import { Vector, vectorAdd, vectorScale, vectorHash, vectorModulus, vectorRound } from "./math.js";
+import { Noise, RNG } from "./random.js";
 
 const WORLD_SIZE = 100;
 const WORLD_AREA = WORLD_SIZE * WORLD_SIZE;
 const UPDATE_PERCENT = 0.005;
 
 export class World {
+    rng: RNG;
     time: number = 0;
     tiles: number[][];
     beings: Record<number, Being> = {};
@@ -27,6 +29,8 @@ export class World {
             World.prototype,
         ) as World;
 
+        Object.setPrototypeOf(world.rng, RNG.prototype);
+
         for (const being of Object.values(world.beings)) {
             Being.inflate(being);
         }
@@ -35,7 +39,9 @@ export class World {
     }
 
     constructor() {
-        const noise = new Noise();
+        this.rng = new RNG(67);
+        const noise = new Noise(this.rng.randInt());
+
         this.tiles = [];
         for (let y = 0; y < WORLD_SIZE; y++) {
             this.tiles[y] = [];
@@ -53,21 +59,40 @@ export class World {
         }
 
         this.scatter(GRASS_TILE, BUSHES_TILE, 0.01);
-        this.scatter(GRASS_TILE, TREE_TILE, 0.01);
+        this.groupedScatter(GRASS_TILE, OAK_TREE_TILE, 0.005, 6, 0.9);
+        this.groupedScatter(GRASS_TILE, PINE_TREE_TILE, 0.005, 15, 0.9);
+    }
+
+    groupedScatter(find: number, replace: number, percent: number, radius: number, groupingChance: number) {
+        let centerPosition: Vector = this.randomPosition();
+        for (let i = 0; i < percent * WORLD_AREA;) {
+            if (this.rng.randFloat() > groupingChance) {
+                centerPosition = this.randomPosition();
+            }
+
+            const offset = vectorRound(vectorScale(this.rng.randUnitVector(), radius * this.rng.randFloat()));
+            const position = vectorAdd(centerPosition, offset);
+            if (this.getTile(position) == find) {
+                this.setTile(position, replace);
+                i++;
+            }
+        }
     }
 
     scatter(find: number, replace: number, percent: number) {
-        for (let i = 0; i < percent * WORLD_AREA; i++) {
+        for (let i = 0; i < percent * WORLD_AREA;) {
             const position = this.randomPosition();
+
             if (this.getTile(position) == find) {
                 this.setTile(position, replace);
+                i++;
             }
         }
     }
 
     randomPosition(): Vector {
-        const x = Math.floor(Math.random() * WORLD_SIZE);
-        const y = Math.floor(Math.random() * WORLD_SIZE);
+        const x = this.rng.randIntN(WORLD_SIZE);
+        const y = this.rng.randIntN(WORLD_SIZE);
         return [x, y];
     }
 
@@ -81,7 +106,7 @@ export class World {
     }
 
     getTileData(position: Vector): TileData {
-        return TILES[this.getTile(position)];
+        return TILE_DATA[this.getTile(position)];
     }
 
     getTile(position: Vector): number {
@@ -152,8 +177,8 @@ export class World {
                 let offsetX = 16,
                     offsetY = 24;
                 if (breakProgress > 0) {
-                    offsetX += (Math.random() - 0.5) * (breakProgress * 2 + 1);
-                    offsetY += (Math.random() - 0.5) * (breakProgress * 2 + 1);
+                    offsetX += (this.rng.randFloat() - 0.5) * (breakProgress * 2 + 1);
+                    offsetY += (this.rng.randFloat() - 0.5) * (breakProgress * 2 + 1);
                     ctx.fillStyle += Math.ceil(255 - breakProgress * 255)
                         .toString(16)
                         .padStart(2, "0");

@@ -12,7 +12,6 @@ export function vectorScale(a: Vector, b: number): Vector {
     return [a[0] * b, a[1] * b];
 }
 
-
 export function vectorDot(a: Vector, b: Vector): number {
     return a[0] * b[0] + a[1] * b[1];
 }
@@ -23,6 +22,10 @@ export function vectorModulus(a: Vector, b: Vector): Vector {
 
 export function vectorFloor(a: Vector): Vector {
     return [Math.floor(a[0]), Math.floor(a[1])];
+}
+
+export function vectorRound(a: Vector): Vector {
+    return [Math.round(a[0]), Math.round(a[1])];
 }
 
 export function vectorCeil(a: Vector): Vector {

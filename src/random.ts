@@ -11,7 +11,7 @@ import {
 export class RNG {
     state!: number;
 
-    constructor(seed: number = Math.floor(Math.random() * 2147483648)) {
+    constructor(seed: number) {
         this.seed(seed);
     }
 
@@ -37,12 +37,23 @@ export class RNG {
 
     // [0, 2147483648)
     randInt(): number {
+        this.shuffle();
+
         let stream = 0;
         for (let i = 0; i < 31; i++) {
             stream += this.advance() << i;
         }
 
         return stream;
+    }
+
+    randIntN(n: number): number {
+        return Math.floor(this.randInt() / 2147483647 * n);
+    }
+
+    // [0, 1]
+    randFloat(): number {
+        return this.randInt() / 2147483647;
     }
 
     // random unit vector
@@ -58,8 +69,8 @@ export class Noise {
     private rng: RNG;
     private offset: number;
 
-    constructor(seed: number = Math.floor(Math.random() * 2147483648)) {
-        this.rng = new RNG();
+    constructor(seed: number) {
+        this.rng = new RNG(0);
         this.offset = seed;
     }
 

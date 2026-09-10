@@ -1,5 +1,5 @@
 import { Vector, vectorAdd } from "./math.js";
-import { DIRT_TILE } from "./tile.js";
+import { DIRT_TILE } from "./data.js";
 import { World } from "./world.js";
 
 export abstract class Being {
@@ -19,7 +19,7 @@ export abstract class Being {
 
     position: Vector = [0, 0];
     moveDelay: number = 0;
-    speed: number = 0.25;
+    speed: number = 1/3;
     active: boolean = true;
 
     abstract rune: string;
@@ -55,7 +55,7 @@ export class Player extends Being {
     update(world: World) {
         super.update(world);
 
-        if (world.time > this.lastInput + 10) {
+        if (world.time > this.lastInput + 30) {
             this.active = false;
         }
 
