@@ -1,5 +1,5 @@
-import { Being } from "./being.js";
-import { AnyMessage, INPUT_SIGNAL, UPDATE_SIGNAL } from "./message.js";
+import { Being, Player } from "./being.js";
+import { AnyMessage, HOLD_SIGNAL, INPUT_SIGNAL, UPDATE_SIGNAL } from "./message.js";
 import { World } from "./world.js";
 
 export class Client {
@@ -53,9 +53,10 @@ export class Client {
     update(world: World) {
         this.world = world;
 
-        const player = this.world.beings[this.playerUUID];
+        const player = this.world.beings[this.playerUUID] as Player;
         if (player !== undefined) {
             this.world.render(player.position, this.ctx);
+            player.inventory.render(this);
         }
 
         this.sendInput();
@@ -68,6 +69,14 @@ export class Client {
             sig: INPUT_SIGNAL,
             uuid: this.playerUUID,
             input: this.playerInput,
+        });
+    }
+
+    sendHolding(itemId: number) {
+        this.send({
+            sig: HOLD_SIGNAL,
+            uuid: this.playerUUID,
+            itemId,
         });
     }
 }

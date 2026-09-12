@@ -1,12 +1,14 @@
 import { Vector, vectorAdd } from "./math.js";
 import { DIRT_TILE } from "./data.js";
 import { World } from "./world.js";
+import { Inventory } from "./inventory.js";
 
 export abstract class Being {
     static inflate(being: any) {
         switch (being.type) {
             case "player":
                 Object.setPrototypeOf(being, Player.prototype);
+                Object.setPrototypeOf(being.inventory, Inventory.prototype);
         }
     }
 
@@ -51,6 +53,7 @@ export class Player extends Being {
     breakProgress: number = 0;
     input: Record<string, boolean> = {};
     lastInput: number = 0;
+    inventory: Inventory = new Inventory();
 
     update(world: World) {
         super.update(world);
@@ -82,7 +85,12 @@ export class Player extends Being {
                 this.breakProgress += tileData.breakSpeed;
 
                 if (this.breakProgress >= 1) {
-                    world.setTile(this.target, DIRT_TILE)
+                    const tileData = world.getTileData(this.target);
+                    for (const itemId of tileData.items ?? []) {
+                        this.inventory.add(itemId);
+                    }
+
+                    world.setTile(this.target, DIRT_TILE);
                     this.breakProgress = 0;
                 }
             } else {

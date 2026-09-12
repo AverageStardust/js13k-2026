@@ -1,9 +1,7 @@
-body {
+body, canvas, div, h3 {
+    font-family: 'Nimbus Mono PS', 'Courier New', monospace;
     background: #000;
     color: #fff;
-}
-
-canvas, div, h2 {
     margin-left: auto;
     margin-right: auto;
     text-align: center;
@@ -11,6 +9,10 @@ canvas, div, h2 {
 }
 
 div {
-    width: 240px;
+    flex: 50%;
     white-space: pre;
+}
+
+hr {
+    width: 256px;
 }
