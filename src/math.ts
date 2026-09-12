@@ -8,8 +8,20 @@ export function vectorAdd(a: Vector, b: Vector): Vector {
     return [a[0] + b[0], a[1] + b[1]];
 }
 
+export function vectorSub(a: Vector, b: Vector): Vector {
+    return [a[0] - b[0], a[1] - b[1]];
+}
+
 export function vectorScale(a: Vector, b: number): Vector {
     return [a[0] * b, a[1] * b];
+}
+
+export function vectorNormalize(a: Vector, length: number = 1): Vector {
+    return vectorScale(a, length / vectorLength(a));
+}
+
+export function vectorLength(a: Vector): number {
+    return Math.hypot(a[0], a[1]);
 }
 
 export function vectorDot(a: Vector, b: Vector): number {

@@ -27,7 +27,7 @@ function main() {
     };
 
     setInterval(() => {
-        if (client.lastUpdate < Date.now() - 500) {
+        if (client.lastUpdate < Date.now() - 1000) {
             client.send = (message: AnyMessage) => {
                 return server.receive(JSON.parse(JSON.stringify(message)))
             };

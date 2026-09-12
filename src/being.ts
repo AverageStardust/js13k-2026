@@ -1,5 +1,5 @@
-import { Vector, vectorAdd } from "./math.js";
-import { DIRT_TILE } from "./data.js";
+import { Vector, vectorAdd, vectorNormalize, vectorSub } from "./math.js";
+import { DIRT_TILE, ITEM_DATA } from "./data.js";
 import { World } from "./world.js";
 import { Inventory } from "./inventory.js";
 
@@ -21,7 +21,7 @@ export abstract class Being {
 
     position: Vector = [0, 0];
     moveDelay: number = 0;
-    speed: number = 1/3;
+    speed: number = 1 / 3;
     active: boolean = true;
 
     abstract rune: string;
@@ -30,13 +30,17 @@ export abstract class Being {
         this.moveDelay -= this.speed;
     }
 
+    render(ctx: CanvasRenderingContext2D) {
+        ctx.fillText(this.rune, 0, 0);
+    }
+
     move(direction: Vector, world: World) {
         const newPosition = vectorAdd(this.position, direction);
         const tileData = world.getTileData(newPosition);
 
-        if(this.moveDelay <= 0.0001 && tileData.isGround) {
+        if (this.moveDelay <= 0.0001 && tileData.isGround) {
             this.position = vectorAdd(this.position, direction);
-            this.moveDelay = 1
+            this.moveDelay = 1;
             return true;
         } else {
             return false;
@@ -58,7 +62,7 @@ export class Player extends Being {
     update(world: World) {
         super.update(world);
 
-        if (world.time > this.lastInput + 30) {
+        if (world.time > this.lastInput + 50) {
             this.active = false;
         }
 
@@ -96,6 +100,20 @@ export class Player extends Being {
             } else {
                 this.breakProgress = 0;
             }
+        }
+    }
+
+    render(ctx: CanvasRenderingContext2D) {
+        ctx.fillText(this.rune, 0, 0);
+
+        if (this.target !== undefined && this.inventory.holding !== undefined) {
+            const offset = vectorNormalize(vectorSub(this.target, this.position), 36);
+            const heldItem = ITEM_DATA[this.inventory.holding];
+            const itemSprite = heldItem.name.split(" ")[0];
+
+            ctx.scale(0.5, 0.5);
+            ctx.fillText(itemSprite, offset[0], offset[1]);
+            ctx.scale(2, 2);
         }
     }
 
