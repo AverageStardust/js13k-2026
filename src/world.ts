@@ -156,7 +156,7 @@ export class World {
             const oldBeing = visableBeings[hash];
             const oldDepth = oldBeing?.depth ?? -Infinity;
 
-            if (being.active && oldDepth < being.depth) {
+            if (being.isActive && oldDepth < being.depth) {
                 visableBeings[hash] = being;
             }
         }
@@ -168,7 +168,7 @@ export class World {
         const selectedPositions: Record<number, number> = [];
 
         for (const being of Object.values(this.beings)) {
-            if (being instanceof Player && being.target !== undefined) {
+            if (being instanceof Player && being.isActive && being.target !== undefined) {
                 selectedPositions[vectorHash(being.target)] =
                     being.breakProgress;
             }

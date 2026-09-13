@@ -1,5 +1,5 @@
 import { Vector, vectorAdd, vectorNormalize, vectorSub } from "./math.js";
-import { DIRT_TILE, ITEM_DATA } from "./data.js";
+import { DIRT_TILE, ITEM_DATA, TILE_DATA } from "./data.js";
 import { World } from "./world.js";
 import { Inventory } from "./inventory.js";
 
@@ -22,7 +22,7 @@ export abstract class Being {
     position: Vector = [0, 0];
     moveDelay: number = 0;
     speed: number = 1 / 3;
-    active: boolean = true;
+    isActive: boolean = true;
 
     abstract rune: string;
 
@@ -62,10 +62,28 @@ export class Player extends Being {
     update(world: World) {
         super.update(world);
 
-        if (world.time > this.lastInput + 50) {
-            this.active = false;
+        if (world.time > this.lastInput + 1000) {
+            this.isActive = false;
         }
 
+        this.handleInput(world);
+    }
+
+    handleInput(world: World) {
+        this.handleMovement(world);
+
+        if (this.target !== undefined) {
+            if (this.input["q"]) {
+                this.handleBreaking(world, this.target);
+            }
+
+            if (this.input["e"] && this.inventory.holding !== undefined) {
+                this.handlePlacing(world, this.target, this.inventory.holding);
+            }
+        }
+    }
+
+    handleMovement(world: World) {
         let movement: Vector = [0, 0];
         if (this.input["w"]) {
             movement[1]--;
@@ -82,23 +100,39 @@ export class Player extends Being {
         if (movement[0] || movement[1]) {
             this.move(movement, world);
         }
+    }
 
-        if (this.input["q"] && this.target !== undefined) {
-            const tileData = world.getTileData(this.target);
-            if (tileData.breakStrength < 1) {
-                this.breakProgress += tileData.breakSpeed;
+    handleBreaking(world: World, target: Vector) {
+        const tileData = world.getTileData(target);
 
-                if (this.breakProgress >= 1) {
-                    const tileData = world.getTileData(this.target);
-                    for (const itemId of tileData.items ?? []) {
-                        this.inventory.add(itemId);
-                    }
+        if (tileData.breakStrength < 1) {
+            this.breakProgress += tileData.breakSpeed;
 
-                    world.setTile(this.target, DIRT_TILE);
-                    this.breakProgress = 0;
+            if (this.breakProgress >= 1) {
+                const tileData = world.getTileData(target);
+                for (const itemId of tileData.items ?? []) {
+                    this.inventory.add(itemId);
                 }
-            } else {
+
+                world.setTile(target, DIRT_TILE);
                 this.breakProgress = 0;
+            }
+        } else {
+            this.breakProgress = 0;
+        }
+    }
+
+    handlePlacing(world: World, target: Vector, itemId: number) {
+        const existingTileId = world.getTile(target);
+        const tileData = TILE_DATA[existingTileId];
+
+        if (tileData.isGround) {
+            const itemTileId = ITEM_DATA[itemId].tile;
+
+            if (itemTileId !== undefined && itemTileId !== existingTileId) {
+                if (this.inventory.remove(itemId)) {
+                    world.setTile(target, itemTileId);
+                }
             }
         }
     }
@@ -107,7 +141,10 @@ export class Player extends Being {
         ctx.fillText(this.rune, 0, 0);
 
         if (this.target !== undefined && this.inventory.holding !== undefined) {
-            const offset = vectorNormalize(vectorSub(this.target, this.position), 36);
+            const offset = vectorNormalize(
+                vectorSub(this.target, this.position),
+                36,
+            );
             const heldItem = ITEM_DATA[this.inventory.holding];
             const itemSprite = heldItem.name.split(" ")[0];
 
@@ -129,6 +166,6 @@ export class Player extends Being {
     setInput(input: Record<string, boolean>, time: number) {
         this.input = input;
         this.lastInput = time;
-        this.active = true;
+        this.isActive = true;
     }
 }

@@ -16,6 +16,10 @@ export class Inventory {
         if (amount < 0) {
             return false;
         } else {
+            if (amount === 0 && this.holding === itemId) {
+                this.holding = undefined;
+            }
+
             this.items[itemId] = amount;
             return true;
         }

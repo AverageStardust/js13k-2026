@@ -68,7 +68,7 @@ export class Server {
         this.world.update();
 
         for (const being of Object.values(this.world.beings)) {
-            if (being.active) {
+            if (being.isActive) {
                 being.update(this.world);
             }
         }
