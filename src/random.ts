@@ -7,7 +7,7 @@ export class RNG {
         this.seed(seed);
     }
 
-    seed(seed: number, shuffles = 3) {
+    seed(seed: number, shuffles = 4) {
         this.state = seed;
         this.state %= 2147483648;
         for (let i = 0; i < shuffles; i++) {
@@ -39,6 +39,7 @@ export class RNG {
         return stream;
     }
 
+    // [0, n)
     randIntN(n: number): number {
         return Math.floor((this.randInt() / 2147483647) * n);
     }
@@ -66,25 +67,38 @@ export class Noise {
         this.offset = seed;
     }
 
+    complex(position: Vector, size: Vector): number {
+        return this.simple(
+            position.scale(0.1),
+            size.scale(0.1),
+        ) * 0.6 + this.simple(
+            position.scale(0.2),
+            size.scale(0.2),
+        ) * 0.3 + this.simple(
+            position.scale(0.5),
+            size.scale(0.5),
+        ) * 0.1
+    }
+
     simple(position: Vector, size: Vector): number {
         const lowGrid = position.floor().modulus(size);
         const highGrid = position.ceil().modulus(size);
         const fractional = position.modulus(new Vector(1));
 
-        this.rng.seed(lowGrid.x + lowGrid.y * 66536 + this.offset);
+        this.rng.seed(lowGrid.x * 16 + lowGrid.y * 66536 + this.offset);
         const topLeft = this.rng.randUnitVector().dot(fractional);
 
-        this.rng.seed(highGrid.x + lowGrid.y * 66536 + this.offset);
+        this.rng.seed(highGrid.x * 16 + lowGrid.y * 66536 + this.offset);
         const topRight = this.rng
             .randUnitVector()
             .dot(fractional.addComponents(-1, 0));
 
-        this.rng.seed(lowGrid.x + highGrid.y * 66536 + this.offset);
+        this.rng.seed(lowGrid.x * 16 + highGrid.y * 66536 + this.offset);
         const bottomLeft = this.rng
             .randUnitVector()
             .dot(fractional.addComponents(0, -1));
 
-        this.rng.seed(highGrid.x + highGrid.y * 66536 + this.offset);
+        this.rng.seed(highGrid.x * 16 + highGrid.y * 66536 + this.offset);
         const bottomRight = this.rng
             .randUnitVector()
             .dot(fractional.addComponents(-1, -1));

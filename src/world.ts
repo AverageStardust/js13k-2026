@@ -1,4 +1,4 @@
-import { Being as Being, Player } from "./being.js";
+import { Being as Being, Player, Unicorn } from "./being.js";
 import {
     BUSHES_TILE,
     DIRT_TILE,
@@ -6,6 +6,7 @@ import {
     GRAVEL_TILE,
     OAK_TREE_TILE,
     PINE_TREE_TILE,
+    RAINBOW_TILE,
     TILE_DATA,
     TileData,
 } from "./data.js";
@@ -46,11 +47,8 @@ export class World {
         for (let y = 0; y < WORLD_SIZE.y; y++) {
             this.tiles[y] = [];
             for (let x = 0; x < WORLD_SIZE.x; x++) {
-                const a = noise.simple(
-                    new Vector(x, y).scale(0.2),
-                    WORLD_SIZE.scale(0.2),
-                );
-                if (a > 0.35) {
+                const a = noise.complex(new Vector(x, y), WORLD_SIZE);
+                if (a > 0.25) {
                     this.tiles[y][x] = GRAVEL_TILE;
                 } else {
                     this.tiles[y][x] = GRASS_TILE;
@@ -58,9 +56,14 @@ export class World {
             }
         }
 
-        this.scatter(GRASS_TILE, BUSHES_TILE, 0.01);
+        this.scatter(GRASS_TILE, BUSHES_TILE, 0.015);
         this.groupedScatter(GRASS_TILE, OAK_TREE_TILE, 0.005, 6, 0.9);
         this.groupedScatter(GRASS_TILE, PINE_TREE_TILE, 0.005, 15, 0.9);
+        this.scatter(GRASS_TILE, RAINBOW_TILE, 0.0015);
+
+        for (let i = 0; i < 3; i++) {
+            this.spawn(new Unicorn());
+        }
     }
 
     groupedScatter(
@@ -96,6 +99,19 @@ export class World {
                 i++;
             }
         }
+    }
+
+    spawn(being: Being, position?: Vector) {
+        while (position === undefined) {
+            position = this.randomPosition();
+
+            if (!this.getTileData(position).isGround) {
+                position = undefined;
+            }
+        }
+
+        being.position = position;
+        this.beings[Being.randomUUID()] = being;
     }
 
     randomPosition(): Vector {
@@ -141,7 +157,7 @@ export class World {
         for (const being of Object.values(this.beings)) {
             if (!this.isOnScreen(cameraPosition, being.position)) continue;
 
-            const hash = being.position.hash();
+            const hash = being.position.modulus(WORLD_SIZE).hash();
             const oldBeing = visableBeings[hash];
             const oldDepth = oldBeing?.depth ?? -Infinity;
 
@@ -154,7 +170,7 @@ export class World {
     }
 
     getSelectedPositions(): Record<number, number> {
-        const selectedPositions: Record<number, number> = [];
+        const selectedPositions: Record<number, number> = {};
 
         for (const being of Object.values(this.beings)) {
             if (
@@ -162,7 +178,7 @@ export class World {
                 being.isActive &&
                 being.target !== undefined
             ) {
-                selectedPositions[being.target.hash()] = being.breakProgress;
+                selectedPositions[being.target.modulus(WORLD_SIZE).hash()] = being.breakProgress;
             }
         }
 
@@ -170,9 +186,9 @@ export class World {
     }
 
     isOnScreen(cameraPosition: Vector, objectPosition: Vector): boolean {
-        const offset = cameraPosition.sub(objectPosition);
+        const offset = cameraPosition.sub(objectPosition).addComponents(9, 9).modulus(WORLD_SIZE);
         return (
-            offset.x >= -9 && offset.x <= 9 && offset.y >= -9 && offset.y <= 9
+            offset.x >= 0 && offset.x <= 18 && offset.y >= 0 && offset.y <= 18
         );
     }
 
@@ -181,8 +197,14 @@ export class World {
         visableBeings: Record<number, Being>,
         ctx: CanvasRenderingContext2D,
     ) {
+        ctx.fillStyle = "#fff";
         for (const being of Object.values(visableBeings)) {
-            const translation = being.position.sub(cameraPosition).addComponents(8, 8).scale(32).addComponents(16, 24);
+            const translation = being.position
+                .sub(cameraPosition)
+                .addComponents(8, 8)
+                .modulus(WORLD_SIZE)
+                .scale(32)
+                .addComponents(16, 24);
             ctx.translate(translation.x, translation.y);
             being.render(ctx);
             ctx.translate(-translation.x, -translation.y);
@@ -201,7 +223,7 @@ export class World {
         for (let x = 0; x < 17; x++) {
             for (let y = 0; y < 17; y++) {
                 const position = cameraPosition.addComponents(x - 8, y - 8);
-                const hash = position.hash();
+                const hash = position.modulus(WORLD_SIZE).hash();
                 const tileData = this.getTileData(position);
                 const breakProgress = selectedPositions[hash];
 

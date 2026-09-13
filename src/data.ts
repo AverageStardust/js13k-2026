@@ -19,20 +19,28 @@ export const DIRT_TILE = 2;
 export const BUSHES_TILE = 3;
 export const OAK_TREE_TILE = 4;
 export const PINE_TREE_TILE = 5;
+export const RAINBOW_TILE = 6;
 
 export const FIBRE_ITEM = 0;
 export const STONE_ITEM = 1;
 export const LOG_ITEM = 2;
 
+export const PLAYER_STEP_SOUND = 0;
+export const CHOP_SOUND = 1;
+export const BOUNCE_SOUND = 2;
+export const DROP_SOUND = 3;
+
 export const TILE_DATA: TileData[] = [
-    { // grass
+    {
+        // grass
         rune: ",",
         colour: "#090",
         breakStrength: 0,
         breakSpeed: 0.3,
         isGround: true,
     },
-    { // gravel
+    {
+        // gravel
         rune: ".",
         colour: "#888",
         breakStrength: 0,
@@ -40,14 +48,16 @@ export const TILE_DATA: TileData[] = [
         isGround: true,
         items: [STONE_ITEM],
     },
-    { // dirt
+    {
+        // dirt
         rune: "_",
         colour: "#750",
         breakStrength: Infinity,
         breakSpeed: 0,
-        isGround : true,
+        isGround: true,
     },
-    { // bushes
+    {
+        // bushes
         rune: "⁂",
         colour: "#090",
         breakStrength: 0,
@@ -55,7 +65,8 @@ export const TILE_DATA: TileData[] = [
         isGround: false,
         items: [FIBRE_ITEM],
     },
-    { // oak tree
+    {
+        // oak tree
         rune: "🌳",
         colour: "#090",
         breakStrength: 1,
@@ -63,14 +74,24 @@ export const TILE_DATA: TileData[] = [
         isGround: false,
         items: [FIBRE_ITEM, LOG_ITEM],
     },
-    { // pine tree
+    {
+        // pine tree
         rune: "🌲",
         colour: "#090",
         breakStrength: 1,
         breakSpeed: 0.1,
         isGround: false,
         items: [LOG_ITEM],
-    }
+    },
+    {
+        // rainbow
+        rune: "🌈",
+        colour: "#090",
+        breakStrength: Infinity,
+        breakSpeed: 0,
+        isGround: false,
+        items: [],
+    },
 ];
 
 export const ITEM_DATA: ItemData[] = [
@@ -85,4 +106,11 @@ export const ITEM_DATA: ItemData[] = [
     {
         name: "🪵 Log",
     },
+];
+
+export const SOUND_DATA: (number | undefined)[][] = [
+    [0.2, 204, 0.05, , , 4, 4, , -1, , 0.01, , , , 0.2, , 0.4, 0.1], // player step
+    [, 100, 0.01, 0.03, , 4, 0, 0.2, , , 0.01, , -0.1, , 0.1, , 0.92, 0.04], // chop
+    [, 181, , 0.03, , 3, 3.6, , -5, , , , 1.4, , 0.3, , 0.1, 0.05, , 1078], // bounce,
+    [, 400, , 0.1, 0.02, 5, , , -6, , , 0.1, 2, , 0.4, 0.1, , 0.02, 0.05, -2e3], // drop,
 ];

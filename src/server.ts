@@ -5,6 +5,7 @@ import {
     HoldMessage,
     INPUT_SIGNAL,
     InputMessage,
+    SOUND_SIGNAL,
     UPDATE_SIGNAL,
 } from "./message.js";
 import { World } from "./world.js";
@@ -15,8 +16,9 @@ export class Server {
     age: number = Math.random();
     send!: (message: AnyMessage) => void;
 
-    private world!: World;
+    world!: World;
     private loopHandle: number = -1;
+    private soundOnCooldown: boolean[] = [];
 
     open(world: World) {
         if (this.loopHandle == -1) {
@@ -64,12 +66,30 @@ export class Server {
         return player;
     }
 
+    playSound(soundId: number, volume: number, cooldown?: number) {
+        if (this.soundOnCooldown[soundId] !== true) {
+            this.send({
+                sig: SOUND_SIGNAL,
+                soundId,
+                volume,
+            });
+
+            if (cooldown !== undefined) {
+                this.soundOnCooldown[soundId] = true;
+                setTimeout(
+                    () => (this.soundOnCooldown[soundId] = false),
+                    cooldown,
+                );
+            }
+        }
+    }
+
     private update() {
         this.world.update();
 
         for (const being of Object.values(this.world.beings)) {
             if (being.isActive) {
-                being.update(this.world);
+                being.update(this);
             }
         }
 

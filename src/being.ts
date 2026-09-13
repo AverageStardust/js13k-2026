@@ -1,7 +1,16 @@
 import { Vector } from "./math.js";
-import { DIRT_TILE, ITEM_DATA, TILE_DATA, TileData } from "./data.js";
-import { World } from "./world.js";
+import {
+    DIRT_TILE,
+    ITEM_DATA,
+    CHOP_SOUND,
+    PLAYER_STEP_SOUND,
+    TILE_DATA,
+    TileData,
+    BOUNCE_SOUND,
+    DROP_SOUND,
+} from "./data.js";
 import { Inventory } from "./inventory.js";
+import { Server } from "./server.js";
 
 export abstract class Being {
     static inflate(being: any) {
@@ -12,12 +21,17 @@ export abstract class Being {
                 if (being.target !== undefined) {
                     Object.setPrototypeOf(being.target, Vector.prototype);
                 }
+                break;
+
+            case "unicorn":
+                Object.setPrototypeOf(being, Unicorn.prototype);
+                break;
         }
 
         Object.setPrototypeOf(being.position, Vector.prototype);
     }
 
-    static getUUID(): number {
+    static randomUUID(): number {
         return Math.floor(Math.random() * 2 ** 53);
     }
 
@@ -31,7 +45,7 @@ export abstract class Being {
 
     abstract rune: string;
 
-    update(_: World) {
+    update(_: Server) {
         this.moveDelay -= this.speed;
     }
 
@@ -39,9 +53,13 @@ export abstract class Being {
         ctx.fillText(this.rune, 0, 0);
     }
 
-    move(direction: Vector, world: World) {
+    move(direction: Vector, server: Server) {
+        if (direction.isZero()) {
+            return false;
+        }
+
         const newPosition = this.position.add(direction);
-        const tileData = world.getTileData(newPosition);
+        const tileData = server.world.getTileData(newPosition);
 
         if (this.moveDelay <= 0.0001 && tileData.isGround) {
             this.position = newPosition;
@@ -50,6 +68,18 @@ export abstract class Being {
         } else {
             return false;
         }
+    }
+}
+
+export class Unicorn extends Being {
+    readonly type = "unicorn";
+    readonly rune = "🦄";
+
+    speed: number = 1 / 2;
+
+    update(server: Server) {
+        super.update(server);
+        this.move(server.world.rng.randUnitVector().round(), server);
     }
 }
 
@@ -64,68 +94,72 @@ export class Player extends Being {
     lastInput: number = 0;
     inventory: Inventory = new Inventory();
 
-    update(world: World) {
-        super.update(world);
+    update(server: Server) {
+        super.update(server);
 
-        if (world.time > this.lastInput + 1000) {
+        if (server.world.time > this.lastInput + 1000) {
             this.isActive = false;
         }
 
-        this.handleInput(world);
+        this.handleInput(server);
     }
 
-    handleInput(world: World) {
-        this.handleMovement(world);
+    handleInput(server: Server) {
+        this.handleMovement(server);
 
         if (this.target !== undefined) {
-            if (this.input["q"]) {
-                this.handleBreaking(world, this.target);
+            if (this.input["KeyQ"]) {
+                this.handleBreaking(server, this.target);
+            } else {
+                this.breakProgress = 0;
             }
 
-            if (this.input["e"] && this.inventory.holding !== undefined) {
-                this.handlePlacing(world, this.target, this.inventory.holding);
+            if (this.input["KeyE"] && this.inventory.holding !== undefined) {
+                this.handlePlacing(server, this.target, this.inventory.holding);
             }
         }
     }
 
-    handleMovement(world: World) {
+    handleMovement(server: Server) {
         let movement = new Vector();
 
-        if (this.input["w"]) {
+        if (this.input["KeyW"]) {
             movement = movement.addComponents(0, -1);
         }
-        if (this.input["s"]) {
+        if (this.input["KeyS"]) {
             movement = movement.addComponents(0, 1);
         }
-        if (this.input["a"]) {
+        if (this.input["KeyA"]) {
             movement = movement.addComponents(-1, 0);
         }
-        if (this.input["d"]) {
+        if (this.input["KeyD"]) {
             movement = movement.addComponents(1, 0);
         }
 
-        if (!movement.isZero()) {
-            this.move(movement, world);
-        }
+        this.move(movement, server);
     }
 
-    handleBreaking(world: World, target: Vector) {
-        const tileData = world.getTileData(target);
+    handleBreaking(server: Server, target: Vector) {
+        const tileData = server.world.getTileData(target);
 
         if (this.canBreak(tileData)) {
             this.breakProgress += tileData.breakSpeed;
+            server.playSound(CHOP_SOUND, 0.45, 200);
 
             if (this.breakProgress >= 1) {
-                const tileData = world.getTileData(target);
                 for (const itemId of tileData.items ?? []) {
                     this.inventory.add(itemId);
                 }
 
-                world.setTile(target, DIRT_TILE);
+                server.world.setTile(target, DIRT_TILE);
                 this.breakProgress = 0;
             }
         } else {
-            this.breakProgress = 0;
+            if (this.breakProgress >= 0 && !tileData.isGround) {
+                server.playSound(BOUNCE_SOUND, 0.6);
+            }
+
+            this.breakProgress = -1;
         }
     }
 
@@ -143,8 +177,8 @@ export class Player extends Being {
         return tileData.breakStrength <= toolStrength;
     }
 
-    handlePlacing(world: World, target: Vector, itemId: number) {
-        const existingTileId = world.getTile(target);
+    handlePlacing(server: Server, target: Vector, itemId: number) {
+        const existingTileId = server.world.getTile(target);
         const tileData = TILE_DATA[existingTileId];
 
         if (tileData.isGround) {
@@ -152,7 +186,8 @@ export class Player extends Being {
 
             if (itemTileId !== undefined && itemTileId !== existingTileId) {
                 if (this.inventory.remove(itemId)) {
-                    world.setTile(target, itemTileId);
+                    server.playSound(DROP_SOUND, 1);
+                    server.world.setTile(target, itemTileId);
                 }
             }
         }
@@ -172,12 +207,15 @@ export class Player extends Being {
         }
     }
 
-    move(direction: Vector, world: World) {
-        if (super.move(direction, world)) {
+    move(direction: Vector, server: Server) {
+        if (super.move(direction, server)) {
+            server.playSound(PLAYER_STEP_SOUND, 0.25);
             this.breakProgress = 0;
         }
 
-        this.target = this.position.add(direction);
+        if (!direction.isZero()) {
+            this.target = this.position.add(direction);
+        }
         return true;
     }
 

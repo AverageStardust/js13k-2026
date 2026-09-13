@@ -1,6 +1,16 @@
 import { Being, Player } from "./being.js";
-import { AnyMessage, HOLD_SIGNAL, INPUT_SIGNAL, UPDATE_SIGNAL } from "./message.js";
+import { SOUND_DATA } from "./data.js";
+import {
+    AnyMessage,
+    HOLD_SIGNAL,
+    INPUT_SIGNAL,
+    SOUND_SIGNAL,
+    SoundMessage,
+    UPDATE_SIGNAL,
+    UpdateMessage,
+} from "./message.js";
 import { World } from "./world.js";
+import { zzfx } from "./ZzFXMicro.js";
 
 export class Client {
     serverAge: number = 0;
@@ -17,15 +27,15 @@ export class Client {
         this.lastUpdate = Date.now();
         this.ctx = ctx;
 
-        this.playerUUID = Being.getUUID();
+        this.playerUUID = Being.randomUUID();
 
         document.onkeydown = (event) => {
-            this.playerInput[event.key] = true;
+            this.playerInput[event.code] = true;
             this.sendInput();
         };
 
         document.onkeyup = (event) => {
-            this.playerInput[event.key] = false;
+            this.playerInput[event.code] = false;
             this.sendInput();
         };
     }
@@ -38,12 +48,27 @@ export class Client {
     }
 
     receive(message: AnyMessage): void {
-        if (message.sig === UPDATE_SIGNAL) {
-            if (message.age > this.serverAge) {
-                this.update(World.inflate(message.state));
-                this.serverAge = message.age;
-            }
+        switch (message.sig) {
+            case UPDATE_SIGNAL:
+                this.handleUpdate(message);
+                break;
+
+            case SOUND_SIGNAL:
+                this.handleSound(message);
+                break;
         }
+    }
+
+    handleUpdate(message: UpdateMessage) {
+        if (message.age > this.serverAge) {
+            this.update(World.inflate(message.state));
+            this.serverAge = message.age;
+        }
+    }
+
+    handleSound(message: SoundMessage) {
+        const sound = SOUND_DATA[message.soundId];
+        zzfx(message.volume * 0.1, ...sound);
     }
 
     update(world: World) {

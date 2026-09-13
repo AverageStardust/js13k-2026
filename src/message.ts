@@ -19,4 +19,11 @@ export interface HoldMessage {
     itemId: number;
 }
 
-export type AnyMessage = UpdateMessage | InputMessage | HoldMessage;
+export const SOUND_SIGNAL = 3;
+export interface SoundMessage {
+    sig: 3;
+    soundId: number;
+    volume: number;
+}
+
+export type AnyMessage = UpdateMessage | InputMessage | HoldMessage | SoundMessage;
