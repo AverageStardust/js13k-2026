@@ -27,6 +27,7 @@
   },
   "author": "Rob Louie",
   "dependencies": {
-    "@types/deno": "^2.7.0"
+    "@types/deno": "^2.7.0",
+    "@wvdsh/sdk-js": "^1.3.48"
   }
 }

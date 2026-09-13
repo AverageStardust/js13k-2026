@@ -1,5 +1,3 @@
-// // @ts-ignore
-// import { WebSocket } from "https://play.js13kgames.com/2026/online/partysocket.js";
 import { Client } from "./client.js";
 import { AnyMessage } from "./message.js";
 import { Server } from "./server.js";
@@ -16,6 +14,11 @@ function main() {
     ctx.fillText("Searcing for server...", 272, 272);
 
     socket.onopen = () => {
+        // @ts-ignore
+        Wavedash.updateLoadProgressZeroToOne(1);
+        // @ts-ignore
+        Wavedash.init();
+
         const client = new Client(ctx);
         const server = new Server();
 
