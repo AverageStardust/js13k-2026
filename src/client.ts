@@ -9,17 +9,13 @@ export class Client {
     send!: (message: AnyMessage) => void;
 
     ctx: CanvasRenderingContext2D;
-    inventory: HTMLDivElement;
 
     playerUUID: number;
     playerInput: Record<string, boolean> = {};
 
-    constructor() {
+    constructor(ctx: CanvasRenderingContext2D) {
         this.lastUpdate = Date.now();
-
-        const canvas = document.querySelector("canvas") as HTMLCanvasElement;
-        this.ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
-        this.inventory = document.querySelector("div") as HTMLDivElement;
+        this.ctx = ctx;
 
         this.playerUUID = Being.getUUID();
 

@@ -65,7 +65,7 @@ export const terserOptions: Terser.MinifyOptions = {
 
     // discard calls to console.* functions.
     // If you wish to drop a specific function call such as console.info
-    drop_console: true,
+    drop_console: false,
 
     // remove debugger; statements
     drop_debugger: true,

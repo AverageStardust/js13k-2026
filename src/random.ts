@@ -11,7 +11,7 @@ import {
 export class RNG {
     state!: number;
 
-    constructor(seed: number) {
+    constructor(seed: number = Math.floor(Math.random() * 2147483647)) {
         this.seed(seed);
     }
 

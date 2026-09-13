@@ -47,7 +47,7 @@ export class World {
     }
 
     constructor() {
-        this.rng = new RNG(67);
+        this.rng = new RNG();
         const noise = new Noise(this.rng.randInt());
 
         this.tiles = [];
@@ -210,8 +210,6 @@ export class World {
         ctx.fillStyle = "#000";
         ctx.fillRect(0, 0, 544, 544);
 
-        ctx.font = "26px 'Nimbus Mono PS', 'Courier New', monospace";
-        ctx.textAlign = "center";
         for (let x = 0; x < 17; x++) {
             for (let y = 0; y < 17; y++) {
                 const position = vectorAdd(cameraPosition, [x - 8, y - 8]);

@@ -34,7 +34,7 @@ export const TILE_DATA: TileData[] = [
     },
     { // gravel
         rune: ".",
-        colour: "#666",
+        colour: "#888",
         breakStrength: 0,
         breakSpeed: 0.3,
         isGround: true,
