@@ -9,6 +9,9 @@ export abstract class Being {
             case "player":
                 Object.setPrototypeOf(being, Player.prototype);
                 Object.setPrototypeOf(being.inventory, Inventory.prototype);
+                if (being.target !== undefined) {
+                    Object.setPrototypeOf(being.target, Vector.prototype);
+                }
         }
 
         Object.setPrototypeOf(being.position, Vector.prototype);
@@ -86,19 +89,19 @@ export class Player extends Being {
     }
 
     handleMovement(world: World) {
-        const movement = new Vector();
+        let movement = new Vector();
 
         if (this.input["w"]) {
-            movement.addComponents(0, -1);
+            movement = movement.addComponents(0, -1);
         }
         if (this.input["s"]) {
-            movement.addComponents(0, 1);
+            movement = movement.addComponents(0, 1);
         }
         if (this.input["a"]) {
-            movement.addComponents(-1, 0);
+            movement = movement.addComponents(-1, 0);
         }
         if (this.input["d"]) {
-            movement.addComponents(1, 0);
+            movement = movement.addComponents(1, 0);
         }
 
         if (!movement.isZero()) {

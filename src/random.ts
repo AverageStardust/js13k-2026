@@ -67,26 +67,24 @@ export class Noise {
     }
 
     simple(position: Vector, size: Vector): number {
-        const topLeftGrid = position.floor().modulus(size);
-        const bottomRightGrid = position.ceil().modulus(size);
+        const lowGrid = position.floor().modulus(size);
+        const highGrid = position.ceil().modulus(size);
         const fractional = position.modulus(new Vector(1));
 
-        this.rng.seed(topLeftGrid.x + topLeftGrid.y * 66536 + this.offset);
+        this.rng.seed(lowGrid.x + lowGrid.y * 66536 + this.offset);
         const topLeft = this.rng.randUnitVector().dot(fractional);
 
-        this.rng.seed(bottomRightGrid.x + topLeftGrid.y * 66536 + this.offset);
+        this.rng.seed(highGrid.x + lowGrid.y * 66536 + this.offset);
         const topRight = this.rng
             .randUnitVector()
             .dot(fractional.addComponents(-1, 0));
 
-        this.rng.seed(topLeftGrid.x + bottomRightGrid.y * 66536 + this.offset);
+        this.rng.seed(lowGrid.x + highGrid.y * 66536 + this.offset);
         const bottomLeft = this.rng
             .randUnitVector()
             .dot(fractional.addComponents(0, -1));
 
-        this.rng.seed(
-            bottomRightGrid.x + bottomRightGrid.y * 66536 + this.offset,
-        );
+        this.rng.seed(highGrid.x + highGrid.y * 66536 + this.offset);
         const bottomRight = this.rng
             .randUnitVector()
             .dot(fractional.addComponents(-1, -1));

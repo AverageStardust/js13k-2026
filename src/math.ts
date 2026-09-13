@@ -11,10 +11,6 @@ export class Vector {
         this.y = y;
     }
 
-    hash(): number {
-        return this.x + this.y * 1000000;
-    }
-
     add(other: Vector): Vector {
         return new Vector(this.x + other.x, this.y + other.y);
     }
@@ -27,8 +23,8 @@ export class Vector {
         return new Vector(this.x - other.x, this.y - other.y);
     }
 
-    scale(b: number): Vector {
-        return new Vector(this.x * b, this.y * b);
+    scale(scalar: number): Vector {
+        return new Vector(this.x * scalar, this.y * scalar);
     }
 
     normalize(length: number = 1): Vector {
@@ -49,6 +45,10 @@ export class Vector {
 
     area(): number {
         return this.x * this.y;
+    }
+
+    hash(): number {
+        return this.x + this.y * 1000000;
     }
 
     isZero(): boolean {
