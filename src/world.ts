@@ -9,19 +9,11 @@ import {
     TILE_DATA,
     TileData,
 } from "./data.js";
-import {
-    Vector,
-    vectorAdd,
-    vectorScale,
-    vectorHash,
-    vectorModulus,
-    vectorRound,
-    vectorSub,
-} from "./math.js";
+import { Vector } from "./math.js";
 import { Noise, RNG } from "./random.js";
 
-const WORLD_SIZE = 100;
-const WORLD_AREA = WORLD_SIZE * WORLD_SIZE;
+const WORLD_SIZE = new Vector(100, 100);
+const WORLD_AREA = WORLD_SIZE.area();
 const UPDATE_PERCENT = 0.005;
 
 export class World {
@@ -51,12 +43,12 @@ export class World {
         const noise = new Noise(this.rng.randInt());
 
         this.tiles = [];
-        for (let y = 0; y < WORLD_SIZE; y++) {
+        for (let y = 0; y < WORLD_SIZE.y; y++) {
             this.tiles[y] = [];
-            for (let x = 0; x < WORLD_SIZE; x++) {
+            for (let x = 0; x < WORLD_SIZE.x; x++) {
                 const a = noise.simple(
-                    [x * 0.2, y * 0.2],
-                    [WORLD_SIZE * 0.2, WORLD_SIZE * 0.2],
+                    new Vector(x, y).scale(0.2),
+                    WORLD_SIZE.scale(0.2),
                 );
                 if (a > 0.35) {
                     this.tiles[y][x] = GRAVEL_TILE;
@@ -84,13 +76,10 @@ export class World {
                 centerPosition = this.randomPosition();
             }
 
-            const offset = vectorRound(
-                vectorScale(
-                    this.rng.randUnitVector(),
-                    radius * this.rng.randFloat(),
-                ),
+            const offset = this.rng.randUnitVector(
+                radius * this.rng.randFloat(),
             );
-            const position = vectorAdd(centerPosition, offset);
+            const position = centerPosition.add(offset.round());
             if (this.getTile(position) == find) {
                 this.setTile(position, replace);
                 i++;
@@ -110,17 +99,17 @@ export class World {
     }
 
     randomPosition(): Vector {
-        const x = this.rng.randIntN(WORLD_SIZE);
-        const y = this.rng.randIntN(WORLD_SIZE);
-        return [x, y];
+        const x = this.rng.randIntN(WORLD_SIZE.x);
+        const y = this.rng.randIntN(WORLD_SIZE.y);
+        return new Vector(x, y);
     }
 
     hasNeighbour(position: Vector, tileId: number) {
         return (
-            this.getTile(vectorAdd(position, [1, 0])) == tileId ||
-            this.getTile(vectorAdd(position, [-1, 0])) == tileId ||
-            this.getTile(vectorAdd(position, [0, 1])) == tileId ||
-            this.getTile(vectorAdd(position, [0, -1])) == tileId
+            this.getTile(position.addComponents(1, 0)) == tileId ||
+            this.getTile(position.addComponents(-1, 0)) == tileId ||
+            this.getTile(position.addComponents(0, 1)) == tileId ||
+            this.getTile(position.addComponents(0, -1)) == tileId
         );
     }
 
@@ -129,13 +118,13 @@ export class World {
     }
 
     getTile(position: Vector): number {
-        position = vectorModulus(position, [WORLD_SIZE, WORLD_SIZE]);
-        return this.tiles[position[1]][position[0]];
+        position = position.modulus(WORLD_SIZE);
+        return this.tiles[position.y][position.x];
     }
 
     setTile(position: Vector, tileId: number) {
-        position = vectorModulus(position, [WORLD_SIZE, WORLD_SIZE]);
-        this.tiles[position[1]][position[0]] = tileId;
+        position = position.modulus(WORLD_SIZE);
+        this.tiles[position.y][position.x] = tileId;
     }
 
     render(cameraPosition: Vector, ctx: CanvasRenderingContext2D) {
@@ -152,7 +141,7 @@ export class World {
         for (const being of Object.values(this.beings)) {
             if (!this.isOnScreen(cameraPosition, being.position)) continue;
 
-            const hash = vectorHash(being.position);
+            const hash = being.position.hash();
             const oldBeing = visableBeings[hash];
             const oldDepth = oldBeing?.depth ?? -Infinity;
 
@@ -168,9 +157,12 @@ export class World {
         const selectedPositions: Record<number, number> = [];
 
         for (const being of Object.values(this.beings)) {
-            if (being instanceof Player && being.isActive && being.target !== undefined) {
-                selectedPositions[vectorHash(being.target)] =
-                    being.breakProgress;
+            if (
+                being instanceof Player &&
+                being.isActive &&
+                being.target !== undefined
+            ) {
+                selectedPositions[being.target.hash()] = being.breakProgress;
             }
         }
 
@@ -178,12 +170,9 @@ export class World {
     }
 
     isOnScreen(cameraPosition: Vector, objectPosition: Vector): boolean {
-        const offset = vectorSub(cameraPosition, objectPosition);
+        const offset = cameraPosition.sub(objectPosition);
         return (
-            offset[0] >= -9 &&
-            offset[0] <= 9 &&
-            offset[1] >= -9 &&
-            offset[1] <= 9
+            offset.x >= -9 && offset.x <= 9 && offset.y >= -9 && offset.y <= 9
         );
     }
 
@@ -193,11 +182,10 @@ export class World {
         ctx: CanvasRenderingContext2D,
     ) {
         for (const being of Object.values(visableBeings)) {
-            const x = (being.position[0] - cameraPosition[0] + 8) * 32 + 16;
-            const y = (being.position[1] - cameraPosition[1] + 8) * 32 + 24;
-            ctx.translate(x, y);
+            const translation = being.position.sub(cameraPosition).addComponents(8, 8).scale(32).addComponents(16, 24);
+            ctx.translate(translation.x, translation.y);
             being.render(ctx);
-            ctx.translate(-x, -y);
+            ctx.translate(-translation.x, -translation.y);
         }
     }
 
@@ -212,8 +200,8 @@ export class World {
 
         for (let x = 0; x < 17; x++) {
             for (let y = 0; y < 17; y++) {
-                const position = vectorAdd(cameraPosition, [x - 8, y - 8]);
-                const hash = vectorHash(position);
+                const position = cameraPosition.addComponents(x - 8, y - 8);
+                const hash = position.hash();
                 const tileData = this.getTileData(position);
                 const breakProgress = selectedPositions[hash];
 

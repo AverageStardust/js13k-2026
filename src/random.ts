@@ -1,12 +1,4 @@
-import {
-    lerp,
-    smoothStep,
-    Vector,
-    vectorCeil,
-    vectorDot,
-    vectorFloor,
-    vectorModulus,
-} from "./math.js";
+import { lerp, smoothStep, Vector } from "./math.js";
 
 export class RNG {
     state!: number;
@@ -48,7 +40,7 @@ export class RNG {
     }
 
     randIntN(n: number): number {
-        return Math.floor(this.randInt() / 2147483647 * n);
+        return Math.floor((this.randInt() / 2147483647) * n);
     }
 
     // [0, 1]
@@ -57,11 +49,11 @@ export class RNG {
     }
 
     // random unit vector
-    randUnitVector(): Vector {
+    randUnitVector(radius: number = 1): Vector {
         const float = this.randInt() / 2147483648;
         const angle = float * Math.PI * 2;
 
-        return [Math.cos(angle), Math.sin(angle)];
+        return Vector.Polar(angle, radius);
     }
 }
 
@@ -75,26 +67,33 @@ export class Noise {
     }
 
     simple(position: Vector, size: Vector): number {
-        const topLeftGrid = vectorModulus(vectorFloor(position), size);
-        const bottomRightGrid = vectorModulus(vectorCeil(position), size);
-        const fx = position[0] % 1;
-        const fy = position[1] % 1;
+        const topLeftGrid = position.floor().modulus(size);
+        const bottomRightGrid = position.ceil().modulus(size);
+        const fractional = position.modulus(new Vector(1));
 
-        this.rng.seed(topLeftGrid[0] + topLeftGrid[1] * 66536 + this.offset);
-        const topLeft = vectorDot(this.rng.randUnitVector(), [fx, fy]);
+        this.rng.seed(topLeftGrid.x + topLeftGrid.y * 66536 + this.offset);
+        const topLeft = this.rng.randUnitVector().dot(fractional);
 
-        this.rng.seed(bottomRightGrid[0] + topLeftGrid[1] * 66536 + this.offset);
-        const topRight = vectorDot(this.rng.randUnitVector(), [fx - 1, fy]);
+        this.rng.seed(bottomRightGrid.x + topLeftGrid.y * 66536 + this.offset);
+        const topRight = this.rng
+            .randUnitVector()
+            .dot(fractional.addComponents(-1, 0));
 
-        this.rng.seed(topLeftGrid[0] + bottomRightGrid[1] * 66536 + this.offset);
-        const bottomLeft = vectorDot(this.rng.randUnitVector(), [fx, fy - 1]);
+        this.rng.seed(topLeftGrid.x + bottomRightGrid.y * 66536 + this.offset);
+        const bottomLeft = this.rng
+            .randUnitVector()
+            .dot(fractional.addComponents(0, -1));
 
-        this.rng.seed(bottomRightGrid[0] + bottomRightGrid[1] * 66536 + this.offset);
-        const bottomRight = vectorDot(this.rng.randUnitVector(), [fx - 1, fy - 1]);
+        this.rng.seed(
+            bottomRightGrid.x + bottomRightGrid.y * 66536 + this.offset,
+        );
+        const bottomRight = this.rng
+            .randUnitVector()
+            .dot(fractional.addComponents(-1, -1));
 
-        const top = lerp(topLeft, topRight, smoothStep(fx));
-        const bottom = lerp(bottomLeft, bottomRight, smoothStep(fx));
+        const top = lerp(topLeft, topRight, smoothStep(fractional.x));
+        const bottom = lerp(bottomLeft, bottomRight, smoothStep(fractional.x));
 
-        return lerp(top, bottom, smoothStep(fy));
+        return lerp(top, bottom, smoothStep(fractional.y));
     }
 }

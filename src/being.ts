@@ -1,4 +1,4 @@
-import { Vector, vectorAdd, vectorNormalize, vectorSub } from "./math.js";
+import { Vector } from "./math.js";
 import { DIRT_TILE, ITEM_DATA, TILE_DATA, TileData } from "./data.js";
 import { World } from "./world.js";
 import { Inventory } from "./inventory.js";
@@ -10,6 +10,8 @@ export abstract class Being {
                 Object.setPrototypeOf(being, Player.prototype);
                 Object.setPrototypeOf(being.inventory, Inventory.prototype);
         }
+
+        Object.setPrototypeOf(being.position, Vector.prototype);
     }
 
     static getUUID(): number {
@@ -19,7 +21,7 @@ export abstract class Being {
     abstract readonly type: string;
     readonly depth: number = 50;
 
-    position: Vector = [0, 0];
+    position: Vector = new Vector();
     moveDelay: number = 0;
     speed: number = 1 / 3;
     isActive: boolean = true;
@@ -35,11 +37,11 @@ export abstract class Being {
     }
 
     move(direction: Vector, world: World) {
-        const newPosition = vectorAdd(this.position, direction);
+        const newPosition = this.position.add(direction);
         const tileData = world.getTileData(newPosition);
 
         if (this.moveDelay <= 0.0001 && tileData.isGround) {
-            this.position = vectorAdd(this.position, direction);
+            this.position = newPosition;
             this.moveDelay = 1;
             return true;
         } else {
@@ -84,20 +86,22 @@ export class Player extends Being {
     }
 
     handleMovement(world: World) {
-        let movement: Vector = [0, 0];
+        const movement = new Vector();
+
         if (this.input["w"]) {
-            movement[1]--;
+            movement.addComponents(0, -1);
         }
         if (this.input["s"]) {
-            movement[1]++;
+            movement.addComponents(0, 1);
         }
         if (this.input["a"]) {
-            movement[0]--;
+            movement.addComponents(-1, 0);
         }
         if (this.input["d"]) {
-            movement[0]++;
+            movement.addComponents(1, 0);
         }
-        if (movement[0] || movement[1]) {
+
+        if (!movement.isZero()) {
             this.move(movement, world);
         }
     }
@@ -155,15 +159,12 @@ export class Player extends Being {
         ctx.fillText(this.rune, 0, 0);
 
         if (this.target !== undefined && this.inventory.holding !== undefined) {
-            const offset = vectorNormalize(
-                vectorSub(this.target, this.position),
-                36,
-            );
+            const offset = this.target.sub(this.position).normalize(36);
             const heldItem = ITEM_DATA[this.inventory.holding];
             const itemSprite = heldItem.name.split(" ")[0];
 
             ctx.scale(0.5, 0.5);
-            ctx.fillText(itemSprite, offset[0], offset[1]);
+            ctx.fillText(itemSprite, offset.x, offset.y);
             ctx.scale(2, 2);
         }
     }
@@ -173,7 +174,7 @@ export class Player extends Being {
             this.breakProgress = 0;
         }
 
-        this.target = vectorAdd(this.position, direction);
+        this.target = this.position.add(direction);
         return true;
     }
 
