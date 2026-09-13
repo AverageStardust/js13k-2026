@@ -9,6 +9,7 @@ export interface TileData {
 
 export interface ItemData {
     name: string;
+    toolStrength?: number;
     tile?: number;
 }
 
@@ -57,7 +58,7 @@ export const TILE_DATA: TileData[] = [
     { // oak tree
         rune: "🌳",
         colour: "#090",
-        breakStrength: 0,
+        breakStrength: 1,
         breakSpeed: 0.1,
         isGround: false,
         items: [FIBRE_ITEM, LOG_ITEM],
@@ -65,7 +66,7 @@ export const TILE_DATA: TileData[] = [
     { // pine tree
         rune: "🌲",
         colour: "#090",
-        breakStrength: 0,
+        breakStrength: 1,
         breakSpeed: 0.1,
         isGround: false,
         items: [LOG_ITEM],
@@ -78,6 +79,7 @@ export const ITEM_DATA: ItemData[] = [
     },
     {
         name: "🪨 Stone",
+        toolStrength: 1,
         tile: GRAVEL_TILE,
     },
     {

@@ -1,5 +1,5 @@
 import { Vector, vectorAdd, vectorNormalize, vectorSub } from "./math.js";
-import { DIRT_TILE, ITEM_DATA, TILE_DATA } from "./data.js";
+import { DIRT_TILE, ITEM_DATA, TILE_DATA, TileData } from "./data.js";
 import { World } from "./world.js";
 import { Inventory } from "./inventory.js";
 
@@ -105,7 +105,7 @@ export class Player extends Being {
     handleBreaking(world: World, target: Vector) {
         const tileData = world.getTileData(target);
 
-        if (tileData.breakStrength < 1) {
+        if (this.canBreak(tileData)) {
             this.breakProgress += tileData.breakSpeed;
 
             if (this.breakProgress >= 1) {
@@ -120,6 +120,20 @@ export class Player extends Being {
         } else {
             this.breakProgress = 0;
         }
+    }
+
+    canBreak(tileData: TileData): boolean {
+        let toolStrength = 0;
+
+        const holdingItem = this.inventory.holding;
+        if (holdingItem !== undefined) {
+            const itemData = ITEM_DATA[holdingItem];
+            if (itemData.toolStrength !== undefined) {
+                toolStrength = itemData.toolStrength;
+            }
+        }
+
+        return tileData.breakStrength <= toolStrength;
     }
 
     handlePlacing(world: World, target: Vector, itemId: number) {
