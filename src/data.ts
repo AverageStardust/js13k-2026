@@ -19,7 +19,6 @@ export const DIRT_TILE = 2;
 export const BUSHES_TILE = 3;
 export const OAK_TREE_TILE = 4;
 export const PINE_TREE_TILE = 5;
-export const RAINBOW_TILE = 6;
 
 export const FIBRE_ITEM = 0;
 export const STONE_ITEM = 1;
@@ -82,15 +81,6 @@ export const TILE_DATA: TileData[] = [
         breakSpeed: 0.1,
         isGround: false,
         items: [LOG_ITEM],
-    },
-    {
-        // rainbow
-        rune: "🌈",
-        colour: "#090",
-        breakStrength: Infinity,
-        breakSpeed: 0,
-        isGround: false,
-        items: [],
     },
 ];
 

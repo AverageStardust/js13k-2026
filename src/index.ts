@@ -14,11 +14,6 @@ function main() {
     ctx.fillText("Searcing for server...", 272, 272);
 
     socket.onopen = () => {
-        // @ts-ignore
-        Wavedash.updateLoadProgressZeroToOne(1);
-        // @ts-ignore
-        Wavedash.init();
-
         const client = new Client(ctx);
         const server = new Server();
 

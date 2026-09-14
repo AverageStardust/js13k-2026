@@ -22,10 +22,6 @@ export abstract class Being {
                     Object.setPrototypeOf(being.target, Vector.prototype);
                 }
                 break;
-
-            case "unicorn":
-                Object.setPrototypeOf(being, Unicorn.prototype);
-                break;
         }
 
         Object.setPrototypeOf(being.position, Vector.prototype);
@@ -68,18 +64,6 @@ export abstract class Being {
         } else {
             return false;
         }
-    }
-}
-
-export class Unicorn extends Being {
-    readonly type = "unicorn";
-    readonly rune = "🦄";
-
-    speed: number = 1 / 2;
-
-    update(server: Server) {
-        super.update(server);
-        this.move(server.world.rng.randUnitVector().round(), server);
     }
 }
 

@@ -1,4 +1,4 @@
-import { Being as Being, Player, Unicorn } from "./being.js";
+import { Being as Being, Player } from "./being.js";
 import {
     BUSHES_TILE,
     DIRT_TILE,
@@ -6,7 +6,6 @@ import {
     GRAVEL_TILE,
     OAK_TREE_TILE,
     PINE_TREE_TILE,
-    RAINBOW_TILE,
     TILE_DATA,
     TileData,
 } from "./data.js";
@@ -59,11 +58,6 @@ export class World {
         this.scatter(GRASS_TILE, BUSHES_TILE, 0.015);
         this.groupedScatter(GRASS_TILE, OAK_TREE_TILE, 0.005, 6, 0.9);
         this.groupedScatter(GRASS_TILE, PINE_TREE_TILE, 0.005, 15, 0.9);
-        this.scatter(GRASS_TILE, RAINBOW_TILE, 0.0015);
-
-        for (let i = 0; i < 3; i++) {
-            this.spawn(new Unicorn());
-        }
     }
 
     groupedScatter(
