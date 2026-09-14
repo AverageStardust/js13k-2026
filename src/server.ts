@@ -1,4 +1,5 @@
 import { Player } from "./being.js";
+import { Client } from "./client.js";
 import {
     AnyMessage,
     HOLD_SIGNAL,
@@ -33,6 +34,15 @@ export class Server {
     close() {
         clearInterval(this.loopHandle);
         this.loopHandle = -1;
+    }
+
+    connectToClients(socket: WebSocket, localClient?: Client) {
+        this.send = (message: AnyMessage) => {
+            // send server messages to remote clients
+            socket.send(JSON.stringify(message));
+            // send server message to our local client
+            localClient?.receive(message);
+        };
     }
 
     receive(message: AnyMessage): void {

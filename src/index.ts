@@ -27,12 +27,14 @@ function onSocketOpen(socket: WebSocket, ctx: CanvasRenderingContext2D) {
         if (event.data[0] !== "{") return;
         const message = JSON.parse(event.data) as AnyMessage;
 
+        // will be ignored if from a client
         client.receive(message);
 
         // check if there is an older remote server being received by the client
         if (client.getWorldTime() > server.world.time) {
             moveGameToRemoteServer(socket, client, server);
         } else if(server.isOpen()) {
+            // will be ignored if from a server
             server.receive(message);
         }
     };
@@ -52,17 +54,8 @@ function setupGameWithLocalServer(
     const client = new Client(ctx);
     const server = new Server();
 
-    server.send = (message: AnyMessage) => {
-        // send server messages to remote clients
-        socket.send(JSON.stringify(message));
-        // send server message to our local client
-        client.receive(message);
-    };
-
-    // send local client messages to local server
-    client.send = (message: AnyMessage) => {
-        server.receive(JSON.parse(JSON.stringify(message)));
-    };
+    server.connectToClients(socket, client);
+    client.connectToLocalServer(server);
 
     return [client, server];
 }
@@ -73,19 +66,14 @@ function moveGameToRemoteServer(
     server: Server,
 ) {
     // send client messages to remote server
-    client.send = (message: AnyMessage) => {
-        socket.send(JSON.stringify(message));
-    };
+    client.connectToRemoteServer(socket);
 
     // disable server
     server.close();
 }
 
 function moveGameToLocalServer(client: Client, server: Server) {
-    // send local client messages to local server
-    client.send = (message: AnyMessage) => {
-        server.receive(JSON.parse(JSON.stringify(message)));
-    };
+    client.connectToLocalServer(server);
 
     // re-enable server, making a new world if the client wasn't already playing on one
     server.open(client.world ?? new World());

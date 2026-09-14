@@ -9,6 +9,7 @@ import {
     UPDATE_SIGNAL,
     UpdateMessage,
 } from "./message.js";
+import { Server } from "./server.js";
 import { World } from "./world.js";
 import { zzfx } from "./ZzFXMicro.js";
 
@@ -51,6 +52,19 @@ export class Client {
         } else {
             return this.world.time
         }
+    }
+
+    connectToLocalServer(server: Server) {
+        this.send = (message: AnyMessage) => {
+            const copiedMessage = JSON.parse(JSON.stringify(message));
+            server.receive(copiedMessage);
+        };
+    }
+
+    connectToRemoteServer(socket: WebSocket) {
+        this.send = (message: AnyMessage) => {
+            socket.send(JSON.stringify(message));
+        };
     }
 
     receive(message: AnyMessage): void {
