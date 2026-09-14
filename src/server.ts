@@ -13,7 +13,6 @@ import { World } from "./world.js";
 const UPDATE_DELAY = 100;
 
 export class Server {
-    age: number = Math.random();
     send!: (message: AnyMessage) => void;
 
     world!: World;
@@ -21,10 +20,14 @@ export class Server {
     private soundOnCooldown: boolean[] = [];
 
     open(world: World) {
-        if (this.loopHandle == -1) {
-            this.loopHandle = setInterval(() => this.update(), UPDATE_DELAY);
-            this.world = world;
-        }
+        if (this.isOpen()) return;
+
+        this.loopHandle = setInterval(() => this.update(), UPDATE_DELAY);
+        this.world = world;
+    }
+
+    isOpen(): boolean {
+        return this.loopHandle > -1;
     }
 
     close() {
@@ -33,15 +36,13 @@ export class Server {
     }
 
     receive(message: AnyMessage): void {
-        if (this.loopHandle > -1) {
-            switch (message.sig) {
-                case INPUT_SIGNAL:
-                    this.handleInput(message);
-                    break;
-                case HOLD_SIGNAL:
-                    this.handleHold(message);
-                    break;
-            }
+        switch (message.sig) {
+            case INPUT_SIGNAL:
+                this.handleInput(message);
+                break;
+            case HOLD_SIGNAL:
+                this.handleHold(message);
+                break;
         }
     }
 
@@ -96,7 +97,7 @@ export class Server {
         this.world.time += UPDATE_DELAY;
         this.send({
             sig: UPDATE_SIGNAL,
-            age: ++this.age,
+            worldTime: this.world.time,
             state: JSON.stringify(this.world),
         });
     }

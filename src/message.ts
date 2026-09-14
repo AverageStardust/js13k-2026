@@ -1,7 +1,7 @@
 export const UPDATE_SIGNAL = 0;
 export interface UpdateMessage {
     sig: 0;
-    age: number;
+    worldTime: number;
     state: string;
 }
 

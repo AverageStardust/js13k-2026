@@ -13,7 +13,6 @@ import { World } from "./world.js";
 import { zzfx } from "./ZzFXMicro.js";
 
 export class Client {
-    serverAge: number = 0;
     lastUpdate: number;
     world!: World;
     send!: (message: AnyMessage) => void;
@@ -43,8 +42,15 @@ export class Client {
     resetConnection() {
         // @ts-ignore
         this.world = undefined;
-        this.serverAge = 0;
         this.lastUpdate = Date.now();
+    }
+
+    getWorldTime() {
+        if (this.world === undefined) {
+            return 0;
+        } else {
+            return this.world.time
+        }
     }
 
     receive(message: AnyMessage): void {
@@ -60,9 +66,8 @@ export class Client {
     }
 
     handleUpdate(message: UpdateMessage) {
-        if (message.age > this.serverAge) {
+        if (message.worldTime > this.getWorldTime()) {
             this.update(World.inflate(message.state));
-            this.serverAge = message.age;
         }
     }
 
