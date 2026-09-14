@@ -17,7 +17,7 @@ export class Server {
     world!: World;
     private send!: (message: AnyMessage) => void;
     private loopHandle: number = -1;
-    private soundOnCooldown: boolean[] = [];
+    private soundHasCooldown: boolean[] = [];
 
     open(world: World) {
         if (this.isOpen()) return;
@@ -77,7 +77,7 @@ export class Server {
     }
 
     playSound(soundId: number, volume: number, cooldown?: number) {
-        if (this.soundOnCooldown[soundId] !== true) {
+        if (this.soundHasCooldown[soundId] !== true) {
             this.send({
                 sig: SOUND_SIGNAL,
                 soundId,
@@ -85,9 +85,9 @@ export class Server {
             });
 
             if (cooldown !== undefined) {
-                this.soundOnCooldown[soundId] = true;
+                this.soundHasCooldown[soundId] = true;
                 setTimeout(
-                    () => (this.soundOnCooldown[soundId] = false),
+                    () => (this.soundHasCooldown[soundId] = false),
                     cooldown,
                 );
             }
@@ -95,15 +95,8 @@ export class Server {
     }
 
     private update() {
-        this.world.update();
+        this.world.update(this, UPDATE_DELAY);
 
-        for (const being of Object.values(this.world.beings)) {
-            if (being.isActive) {
-                being.update(this);
-            }
-        }
-
-        this.world.time += UPDATE_DELAY;
         this.send({
             sig: UPDATE_SIGNAL,
             worldTime: this.world.time,

@@ -11,6 +11,7 @@ import {
 } from "./data.js";
 import { Vector } from "./math.js";
 import { Noise, RNG } from "./random.js";
+import { Server } from "./server.js";
 
 const WORLD_SIZE = new Vector(100, 100);
 const WORLD_AREA = WORLD_SIZE.area();
@@ -273,7 +274,13 @@ export class World {
         ctx.fillText(tileData.rune, x * 32 + offsetX, y * 32 + offsetY);
     }
 
-    update() {
+    update(server: Server, delta: number) {
+        for (const being of Object.values(this.beings)) {
+            if (being.isActive) {
+                being.update(server);
+            }
+        }
+
         for (let i = 0; i < UPDATE_PERCENT * WORLD_AREA; i++) {
             const position = this.randomPosition();
             const tile = this.getTile(position);
@@ -284,5 +291,7 @@ export class World {
                     }
             }
         }
+
+        this.time += delta;
     }
 }
