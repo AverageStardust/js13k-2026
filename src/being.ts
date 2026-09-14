@@ -12,10 +12,12 @@ import {
 import { Inventory } from "./inventory.js";
 import { Server } from "./server.js";
 
+const PLAYER_BEING = 0;
+
 export abstract class Being {
     static inflate(being: any) {
         switch (being.type) {
-            case "player":
+            case PLAYER_BEING:
                 Object.setPrototypeOf(being, Player.prototype);
                 Object.setPrototypeOf(being.inventory, Inventory.prototype);
                 if (being.target !== undefined) {
@@ -31,7 +33,7 @@ export abstract class Being {
         return Math.floor(Math.random() * 2 ** 53);
     }
 
-    abstract readonly type: string;
+    abstract readonly type: number;
     readonly depth: number = 50;
 
     position: Vector = new Vector();
@@ -68,7 +70,7 @@ export abstract class Being {
 }
 
 export class Player extends Being {
-    readonly type = "player";
+    readonly type = PLAYER_BEING;
     readonly depth = 100;
     readonly rune = "🐕";
 

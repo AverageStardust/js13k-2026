@@ -14,9 +14,8 @@ import { World } from "./world.js";
 const UPDATE_DELAY = 100;
 
 export class Server {
-    send!: (message: AnyMessage) => void;
-
     world!: World;
+    private send!: (message: AnyMessage) => void;
     private loopHandle: number = -1;
     private soundOnCooldown: boolean[] = [];
 

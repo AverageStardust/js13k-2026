@@ -16,7 +16,7 @@ import { zzfx } from "./ZzFXMicro.js";
 export class Client {
     lastUpdate: number;
     world!: World;
-    send!: (message: AnyMessage) => void;
+    private send!: (message: AnyMessage) => void;
 
     ctx: CanvasRenderingContext2D;
 
@@ -50,7 +50,7 @@ export class Client {
         if (this.world === undefined) {
             return 0;
         } else {
-            return this.world.time
+            return this.world.time;
         }
     }
 
