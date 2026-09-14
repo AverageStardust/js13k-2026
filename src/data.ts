@@ -4,13 +4,13 @@ export interface TileData {
     breakStrength: number;
     breakSpeed: number;
     isGround: boolean;
-    items?: number[];
+    lootItems?: number[];
 }
 
 export interface ItemData {
     name: string;
     toolStrength?: number;
-    tile?: number;
+    placesTile?: number;
 }
 
 export const GRASS_TILE = 0;
@@ -45,7 +45,7 @@ export const TILE_DATA: TileData[] = [
         breakStrength: 0,
         breakSpeed: 0.3,
         isGround: true,
-        items: [STONE_ITEM],
+        lootItems: [STONE_ITEM],
     },
     {
         // dirt
@@ -62,7 +62,7 @@ export const TILE_DATA: TileData[] = [
         breakStrength: 0,
         breakSpeed: 0.1,
         isGround: false,
-        items: [FIBRE_ITEM],
+        lootItems: [FIBRE_ITEM],
     },
     {
         // oak tree
@@ -71,7 +71,7 @@ export const TILE_DATA: TileData[] = [
         breakStrength: 1,
         breakSpeed: 0.1,
         isGround: false,
-        items: [FIBRE_ITEM, LOG_ITEM],
+        lootItems: [FIBRE_ITEM, LOG_ITEM],
     },
     {
         // pine tree
@@ -80,7 +80,7 @@ export const TILE_DATA: TileData[] = [
         breakStrength: 1,
         breakSpeed: 0.1,
         isGround: false,
-        items: [LOG_ITEM],
+        lootItems: [LOG_ITEM],
     },
 ];
 
@@ -91,7 +91,7 @@ export const ITEM_DATA: ItemData[] = [
     {
         name: "🪨 Stone",
         toolStrength: 1,
-        tile: GRAVEL_TILE,
+        placesTile: GRAVEL_TILE,
     },
     {
         name: "🪵 Log",

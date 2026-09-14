@@ -133,7 +133,7 @@ export class Player extends Being {
             server.playSound(CHOP_SOUND, 0.45, 200);
 
             if (this.breakProgress >= 1) {
-                for (const itemId of tileData.items ?? []) {
+                for (const itemId of tileData.lootItems ?? []) {
                     this.inventory.add(itemId);
                 }
 
@@ -168,7 +168,7 @@ export class Player extends Being {
         const tileData = TILE_DATA[existingTileId];
 
         if (tileData.isGround) {
-            const itemTileId = ITEM_DATA[itemId].tile;
+            const itemTileId = ITEM_DATA[itemId].placesTile;
 
             if (itemTileId !== undefined && itemTileId !== existingTileId) {
                 if (this.inventory.remove(itemId)) {

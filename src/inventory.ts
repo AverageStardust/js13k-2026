@@ -65,7 +65,7 @@ export class Inventory {
                 line.appendChild(document.createElement("span"));
 
                 // equip button
-                if (itemData.tile !== undefined) {
+                if (itemData.placesTile !== undefined) {
                     const button = document.createElement("button");
                     button.textContent = "Equip";
                     button.onclick = () => client.sendHolding(itemId);
